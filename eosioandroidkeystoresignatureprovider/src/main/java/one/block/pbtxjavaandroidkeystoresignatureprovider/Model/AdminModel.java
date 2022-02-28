@@ -1,4 +1,4 @@
-package one.block.eosiojavaandroidkeystoresignatureprovider.Model;
+package one.block.pbtxjavaandroidkeystoresignatureprovider.Model;
 
 import com.google.protobuf.Message;
 

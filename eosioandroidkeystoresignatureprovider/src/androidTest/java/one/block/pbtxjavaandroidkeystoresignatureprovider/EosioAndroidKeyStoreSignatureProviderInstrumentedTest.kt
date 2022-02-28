@@ -1,4 +1,4 @@
-package one.block.eosiojavaandroidkeystoresignatureprovider
+package one.block.pbtxjavaandroidkeystoresignatureprovider
 
 import androidx.test.runner.AndroidJUnit4
 import org.junit.Assert
@@ -35,17 +35,18 @@ class EosioAndroidKeyStoreSignatureProviderInstrumentedTest {
      * Clear key
      */
     @Test
-    fun signTransaction() {
+    fun generateKeyStoreTest() {
 
         // Use the key that was just added to the keystore to sign a transaction.
-        EosioAndroidKeyStoreUtility.generateAndroidKeyStoreKey(TEST_CONST_TEST_KEY_NAME)
+        PbtxKeyStoreUtility.generateAndroidKeyStoreKey(TEST_CONST_TEST_KEY_NAME)
 
-            EosioAndroidKeyStoreUtility.getAndroidKeyStoreKeyInEOSFormat(
+        PbtxKeyStoreUtility.generateProtoMessage(
                 alias = TEST_CONST_TEST_KEY_NAME,
                 password = null,
                 loadStoreParameter = null
         )
-        EosioAndroidKeyStoreUtility.deleteAllKeys(loadStoreParameter = null)
+
+        PbtxKeyStoreUtility.deleteAllKeys(loadStoreParameter = null)
 
     }
 
@@ -54,7 +55,7 @@ class EosioAndroidKeyStoreSignatureProviderInstrumentedTest {
      */
     private fun deleteKeyInAndroidKeyStore(alias: String ) {
         Assert.assertTrue(
-            EosioAndroidKeyStoreUtility.deleteKeyByAlias(
+            PbtxKeyStoreUtility.deleteKeyByAlias(
                 keyAliasToDelete = alias,
                   loadStoreParameter = null
             )

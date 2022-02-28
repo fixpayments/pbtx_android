@@ -1,11 +1,11 @@
-package one.block.eosiojavaandroidkeystoresignatureprovider.errors
+package one.block.pbtxjavaandroidkeystoresignatureprovider.errors
 
 import one.block.eosiojava.error.signatureProvider.SignatureProviderError
 import org.jetbrains.annotations.NotNull
 import java.lang.Exception
 
 /**
- *  Error class that will be thrown from [one.block.eosiojavaandroidkeystoresignatureprovider.EosioAndroidKeyStoreUtility.createGenericKeyParametersSpecBuilder]
+ *  Error class that will be thrown from [one.block.pbtxjavaandroidkeystoresignatureprovider.PbtxKeyStoreUtility.createGenericKeyParametersSpecBuilder]
  */
 class CreateGenericKeyParameterSpecBuilderError : SignatureProviderError {
     constructor() : super()

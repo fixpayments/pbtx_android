@@ -1,4 +1,4 @@
-package one.block.eosiojavaandroidkeystoresignatureprovider.errors
+package one.block.pbtxjavaandroidkeystoresignatureprovider.errors
 
 /**
  * Error content definition for EOSIO Signature Provider for AndroidKeyStore and EOSIO AndroidKeyStore Utility
