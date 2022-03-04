@@ -53,7 +53,7 @@ message Permission {
 
 
 enum KeyType {
-    EOSIO_KEY = 0;
+    EKIS_KEY = 0;
 }
 
 

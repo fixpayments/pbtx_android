@@ -4,6 +4,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Log
 import com.google.crypto.tink.subtle.EllipticCurves
+import com.google.protobuf.ByteString
 import com.google.protobuf.TextFormat
 import one.block.pbtxjavaandroidkeystoresignatureprovider.errors.*
 import one.block.pbtxjavaandroidkeystoresignatureprovider.errors.ErrorString.Companion.DELETE_KEY_KEYSTORE_GENERIC_ERROR
@@ -109,8 +110,9 @@ class PbtxKeyStoreUtility {
                     EllipticCurves.PointFormatType.COMPRESSED,
                     ecPublicKey.w
                 )
+
                 val s = String(bytes)
-                Log.d("ProtoMessage", "protobufTrial bytes :> $s")
+
 
                 val i = 1
                 val b = i.toByte()
@@ -122,10 +124,21 @@ class PbtxKeyStoreUtility {
                 System.arraycopy(ba, 0, destination, 0, 1)
                 System.arraycopy(bytes, 0, destination, 1, bytes.size)
 
+                var ubit: UByteArray = destination.toUByteArray()
+                    Log.d("~", "$ubit")
+
+                Log.d("ProtoMessage~>", "${destination.toHexString()}")
                 protobufTrial(destination)
 
             } catch (ex: Exception) {
+                ex.printStackTrace()
                 throw QueryAndroidKeyStoreError(QUERY_ANDROID_KEYSTORE_GENERIC_ERROR, ex)
+            }
+        }
+
+        fun ByteArray.toHexString() : String {
+            return this.joinToString("") {
+                java.lang.String.format("%02x", it)
             }
         }
 
@@ -192,28 +205,38 @@ class PbtxKeyStoreUtility {
 
 
         fun protobufTrial(key: ByteArray) {
-            val s: String = String(key)
+
+            var s: String =""
+            key.forEach {
+                s += it
+            }
+//            val s: String = "PUB_R1_4ucLsQSE3KXMqDDt1kUQodBKwLrwE8arGvWvitdxSv9n8ej2y7"
             val bs = TextFormat.unescapeBytes(s)
 
-            val key = Pbtx.PublicKey.newBuilder()
-                .setKeyBytes(bs)
-                .setType(Pbtx.KeyType.EOSIO_KEY)
-                .build()
-            Log.d("ProtoMessage", "$key")
+            val byteString = ByteString.copyFrom(key);
 
-            val keyWeight = Pbtx.KeyWeight.newBuilder()
-                .setKey(key)
-                .setWeight(1)
+            val key1 = Pbtx.PublicKey.newBuilder()
+                .setKeyBytes(byteString)
+                .setType(Pbtx.KeyType.EKIS_KEY)
                 .build()
-            val message = Pbtx.Permission.newBuilder()
-                .setActor(3)
-                .setThreshold(2)
-                .addAllKeys(listOf(keyWeight))
-                .build()
-            val bytes = message.toByteArray()
-            val msg = Pbtx.Permission.parseFrom(bytes)
 
+            Log.d("ProtoMessages>", key1.toByteArray().toHexString())
+            Log.d("ProtoMessages>", key1.serializedSize.toString())
+
+//            val keyWeight = Pbtx.KeyWeight.newBuilder()
+//                .setKey(key1)
+//                .setWeight(1)
+//                .build()
+//            val message = Pbtx.Permission.newBuilder()
+//                .setActor(3)
+//                .setThreshold(2)
+//                .addAllKeys(listOf(keyWeight))
+//                .build()
+//            val bytes = message.toByteArray()
+//            Log.d("~~>",Hex.encode(bytes))
         }
+
+
 
         /**
          * Delete all keys in the Android KeyStore
