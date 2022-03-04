@@ -30,8 +30,11 @@ class PbtxKeyStoreUtility {
         private const val SECP256R1_OID_INDEX: Int = 1
         private const val ANDROID_KEYSTORE: String = "AndroidKeyStore"
         private const val ANDROID_ECDSA_SIGNATURE_ALGORITHM: String = "SHA256withECDSA"
+        private const val ANDROID_RSA_SIGNATURE_ALGORITHM: String = "SHA256withRSA"
         private const val SECP256R1_CURVE_NAME = "secp256r1"
         private const val PEM_OBJECT_TYPE_PUBLIC_KEY = "PUBLIC KEY"
+        private var password: KeyStore.ProtectionParameter? = null
+
 
         /**
          * Generate a new key inside Android KeyStore by the given [keyGenParameterSpec] and return the new key in EOS format
@@ -125,10 +128,22 @@ class PbtxKeyStoreUtility {
                 System.arraycopy(bytes, 0, destination, 1, bytes.size)
 
                 var ubit: UByteArray = destination.toUByteArray()
-                    Log.d("~", "$ubit")
+                var uakey: String = ""
+                ubit.forEach {
+                    uakey += it
+                    uakey += ","
+                }
 
-                Log.d("ProtoMessage~>", "${destination.toHexString()}")
+                Log.d("ProtoMessageUakey~>", "$uakey")
                 protobufTrial(destination)
+
+                var signMsg = sign(
+                    "0102030405060708090a0b0c0d0e0f".toByteArray(),
+                    keyEntry
+                )
+                if (signMsg != null) {
+                    Log.d("ProtoMessageSign~>", "${signMsg.toHexString()}")
+                }
 
             } catch (ex: Exception) {
                 ex.printStackTrace()
@@ -136,7 +151,7 @@ class PbtxKeyStoreUtility {
             }
         }
 
-        fun ByteArray.toHexString() : String {
+        fun ByteArray.toHexString(): String {
             return this.joinToString("") {
                 java.lang.String.format("%02x", it)
             }
@@ -156,19 +171,11 @@ class PbtxKeyStoreUtility {
         @JvmStatic
         fun sign(
             data: ByteArray,
-            alias: String,
-            password: KeyStore.ProtectionParameter?,
-            loadStoreParameter: KeyStore.LoadStoreParameter?
+            privateKey: KeyStore.PrivateKeyEntry
         ): ByteArray? {
             try {
-                val ks: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply {
-                    load(loadStoreParameter)
-                }
-
-                val key = ks.getEntry(alias, password) as KeyStore.PrivateKeyEntry
-
                 return Signature.getInstance(ANDROID_ECDSA_SIGNATURE_ALGORITHM).run {
-                    initSign(key.privateKey)
+                    initSign(privateKey.privateKey)
                     update(data)
                     sign()
                 }
@@ -206,7 +213,7 @@ class PbtxKeyStoreUtility {
 
         fun protobufTrial(key: ByteArray) {
 
-            var s: String =""
+            var s: String = ""
             key.forEach {
                 s += it
             }
@@ -235,7 +242,6 @@ class PbtxKeyStoreUtility {
 //            val bytes = message.toByteArray()
 //            Log.d("~~>",Hex.encode(bytes))
         }
-
 
 
         /**
