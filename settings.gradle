@@ -8,4 +8,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Eosio"
 include ':app'
-include ':eosioandroidkeystoresignatureprovider'
+include ':ekisandroidkeystoresignatureprovider'

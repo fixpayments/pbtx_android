@@ -1,4 +1,4 @@
-package com.test.eosiodemo;
+package com.test.ekisdemo;
 
 import androidx.appcompat.app.AppCompatActivity;
 

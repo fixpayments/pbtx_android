@@ -11,7 +11,7 @@ import org.junit.runner.RunWith
  * Test class for [EosioAndroidKeyStoreSignatureProvider]
  */
 @RunWith(AndroidJUnit4::class)
-class EosioAndroidKeyStoreSignatureProviderInstrumentedTest {
+class EkisAndroidKeyStoreSignatureProviderInstrumentedTest {
 
     companion object {
         const val TEST_CONST_TEST_KEY_NAME = "test_key"
@@ -22,7 +22,7 @@ class EosioAndroidKeyStoreSignatureProviderInstrumentedTest {
     val exceptionRule: ExpectedException = ExpectedException.none()
 
     /**
-     * Test [EosioAndroidKeyStoreSignatureProvider.signTransaction] method
+     * Test [EkisAndroidKeyStoreSignatureProviderInstrumentedTest.generateKeyStoreTest] method
      *
      * Generate new key
      *

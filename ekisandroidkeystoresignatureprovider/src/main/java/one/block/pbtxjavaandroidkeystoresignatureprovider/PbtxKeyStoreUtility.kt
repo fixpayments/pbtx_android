@@ -114,9 +114,6 @@ class PbtxKeyStoreUtility {
                     ecPublicKey.w
                 )
 
-                val s = String(bytes)
-
-
                 val i = 1
                 val b = i.toByte()
                 val ba = ByteArray(1)
