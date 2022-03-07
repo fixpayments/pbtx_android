@@ -1,17 +1,21 @@
-package one.block.pbtxjavaandroidkeystoresignatureprovider
+package ekis.pbtxjavaandroidkeystoresignatureprovider
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Log
+import ekis.pbtxjavaandroidkeystoresignatureprovider.errors.AndroidKeyStoreDeleteError
+import ekis.pbtxjavaandroidkeystoresignatureprovider.errors.AndroidKeyStoreSigningError
 import com.google.crypto.tink.subtle.EllipticCurves
 import com.google.protobuf.ByteString
 import com.google.protobuf.TextFormat
-import one.block.pbtxjavaandroidkeystoresignatureprovider.errors.*
-import one.block.pbtxjavaandroidkeystoresignatureprovider.errors.ErrorString.Companion.DELETE_KEY_KEYSTORE_GENERIC_ERROR
-import one.block.pbtxjavaandroidkeystoresignatureprovider.errors.ErrorString.Companion.GENERATE_KEY_ECGEN_MUST_USE_SECP256R1
-import one.block.pbtxjavaandroidkeystoresignatureprovider.errors.ErrorString.Companion.GENERATE_KEY_KEYGENSPEC_MUST_USE_EC
-import one.block.pbtxjavaandroidkeystoresignatureprovider.errors.ErrorString.Companion.GENERATE_KEY_MUST_HAS_PURPOSE_SIGN
-import one.block.pbtxjavaandroidkeystoresignatureprovider.errors.ErrorString.Companion.QUERY_ANDROID_KEYSTORE_GENERIC_ERROR
+import ekis.pbtxjavaandroidkeystoresignatureprovider.errors.*
+import ekis.pbtxjavaandroidkeystoresignatureprovider.errors.ErrorString.Companion.DELETE_KEY_KEYSTORE_GENERIC_ERROR
+import ekis.pbtxjavaandroidkeystoresignatureprovider.errors.ErrorString.Companion.GENERATE_KEY_ECGEN_MUST_USE_SECP256R1
+import ekis.pbtxjavaandroidkeystoresignatureprovider.errors.ErrorString.Companion.GENERATE_KEY_KEYGENSPEC_MUST_USE_EC
+import ekis.pbtxjavaandroidkeystoresignatureprovider.errors.ErrorString.Companion.GENERATE_KEY_MUST_HAS_PURPOSE_SIGN
+import ekis.pbtxjavaandroidkeystoresignatureprovider.errors.ErrorString.Companion.QUERY_ANDROID_KEYSTORE_GENERIC_ERROR
+import ekis.pbtxjavaandroidkeystoresignatureprovider.errors.InvalidKeyGenParameter
+import ekis.pbtxjavaandroidkeystoresignatureprovider.errors.QueryAndroidKeyStoreError
 import pbtx.Pbtx
 import java.security.*
 import java.security.interfaces.ECPublicKey
@@ -79,7 +83,7 @@ class PbtxKeyStoreUtility {
         fun generateAndroidKeyStoreKey(alias: String) {
             // Create a default KeyGenParameterSpec
             val keyGenParameterSpec: KeyGenParameterSpec =
-                this.generateDefaultKeyGenParameterSpecBuilder(alias).build()
+                generateDefaultKeyGenParameterSpecBuilder(alias).build()
 
             generateAndroidKeyStoreKey(keyGenParameterSpec)
         }

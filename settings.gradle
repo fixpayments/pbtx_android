@@ -6,6 +6,6 @@ dependencyResolutionManagement {
         jcenter() // Warning: this repository is going to shut down soon
     }
 }
-rootProject.name = "Eosio"
+rootProject.name = "EKIS"
 include ':app'
 include ':ekisandroidkeystoresignatureprovider'

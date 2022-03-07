@@ -73,8 +73,8 @@ dependencies {
 
 }
 
-def libraryGroupId = 'one.block'
-def libraryArtifactId = 'eosioandroidkeystoresignatureprovider'
+def libraryGroupId = 'ekis'
+def libraryArtifactId = 'ekisandroidkeystoresignatureprovider'
 def libraryVersion = '1.0.0'
 
 task androidSourcesJar(type: Jar) {

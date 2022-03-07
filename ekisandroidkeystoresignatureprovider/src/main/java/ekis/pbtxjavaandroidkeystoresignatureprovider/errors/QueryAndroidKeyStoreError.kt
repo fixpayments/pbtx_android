@@ -1,4 +1,4 @@
-package one.block.pbtxjavaandroidkeystoresignatureprovider.errors
+package ekis.pbtxjavaandroidkeystoresignatureprovider.errors
 
 import one.block.eosiojava.error.signatureProvider.GetAvailableKeysError
 import org.jetbrains.annotations.NotNull

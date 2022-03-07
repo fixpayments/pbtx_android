@@ -1,4 +1,4 @@
-package one.block.pbtxjavaandroidkeystoresignatureprovider
+package ekis.pbtxjavaandroidkeystoresignatureprovider
 
 import androidx.test.runner.AndroidJUnit4
 import org.junit.Assert
