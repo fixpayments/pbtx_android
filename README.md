@@ -54,3 +54,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 implied.  See the License for the specific language governing
 permissions and limitations under the License.
 
+**Step to perform unit test**
+
+1) Clone the GitHub project on your system using git URL : https://github.com/shravanvavadiya/pbtx_android.git
+2) Go to the folder where .git folder is located in the project.
+3) Open terminal in your computer.
+4) Checkout branch ‘develop’.
+5) Open project in android studio and connect your mobile device with the computer.
+6) Build gradle by writing  command given below (You must be at folder path where .gradle folder is located in the project)
+gradlew build
+7) Execute below commands to perform unit testing.
+adb shell am instrument -w -m	-e debug false -e class 'ekis.pbtxjavaandroidkeystoresignatureprovider.EkisAndroidKeyStoreSignatureProviderInstrumentedTest#generateKeyStoreTest' ekis.pbtxjavaandroidkeystoresignatureprovider.test/androidx.test.runner.AndroidJUnitRunner
+8) If you want to print logs use below commands in other terminal.
+adb logcat | FINDSTR System.out (For windows OS)
+adb logcat|grep System.out (For other OS)
+
+
