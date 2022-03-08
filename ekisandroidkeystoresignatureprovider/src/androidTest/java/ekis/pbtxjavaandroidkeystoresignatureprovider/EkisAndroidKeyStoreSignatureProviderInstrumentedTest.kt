@@ -1,6 +1,8 @@
 package ekis.pbtxjavaandroidkeystoresignatureprovider
 
+import android.util.Log
 import androidx.test.runner.AndroidJUnit4
+import ekis.pbtxjavaandroidkeystoresignatureprovider.PbtxKeyStoreUtility
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -41,9 +43,10 @@ class EkisAndroidKeyStoreSignatureProviderInstrumentedTest {
         PbtxKeyStoreUtility.generateAndroidKeyStoreKey(TEST_CONST_TEST_KEY_NAME)
 
         PbtxKeyStoreUtility.generateProtoMessage(
-                alias = TEST_CONST_TEST_KEY_NAME,
-                password = null,
-                loadStoreParameter = null
+            alias = TEST_CONST_TEST_KEY_NAME,
+            password = null,
+            "0102030405060708090a0b0c0d0e0f".toByteArray(),
+            loadStoreParameter = null
         )
 
         PbtxKeyStoreUtility.deleteAllKeys(loadStoreParameter = null)
@@ -53,11 +56,11 @@ class EkisAndroidKeyStoreSignatureProviderInstrumentedTest {
     /**
      * Delete a key in Android KeyStore for testing
      */
-    private fun deleteKeyInAndroidKeyStore(alias: String ) {
+    private fun deleteKeyInAndroidKeyStore(alias: String) {
         Assert.assertTrue(
             PbtxKeyStoreUtility.deleteKeyByAlias(
                 keyAliasToDelete = alias,
-                  loadStoreParameter = null
+                loadStoreParameter = null
             )
         )
     }

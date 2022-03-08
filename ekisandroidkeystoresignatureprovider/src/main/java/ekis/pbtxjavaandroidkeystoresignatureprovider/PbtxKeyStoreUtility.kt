@@ -21,24 +21,15 @@ import java.security.*
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
-
-
 /**
  * Utility class provides cryptographic methods to manage keys in the Android KeyStore Signature Provider and uses the keys to sign transactions.
  */
 class PbtxKeyStoreUtility {
 
     companion object {
-        private const val ANDROID_PUBLIC_KEY_OID_ID: Int = 0
-        private const val EC_PUBLICKEY_OID_INDEX: Int = 0
-        private const val SECP256R1_OID_INDEX: Int = 1
         private const val ANDROID_KEYSTORE: String = "AndroidKeyStore"
         private const val ANDROID_ECDSA_SIGNATURE_ALGORITHM: String = "SHA256withECDSA"
-        private const val ANDROID_RSA_SIGNATURE_ALGORITHM: String = "SHA256withRSA"
         private const val SECP256R1_CURVE_NAME = "secp256r1"
-        private const val PEM_OBJECT_TYPE_PUBLIC_KEY = "PUBLIC KEY"
-        private var password: KeyStore.ProtectionParameter? = null
-
 
         /**
          * Generate a new key inside Android KeyStore by the given [keyGenParameterSpec] and return the new key in EOS format
@@ -101,6 +92,7 @@ class PbtxKeyStoreUtility {
         fun generateProtoMessage(
             alias: String,
             password: KeyStore.ProtectionParameter?,
+            dataMsg: ByteArray,
             loadStoreParameter: KeyStore.LoadStoreParameter?
         ) {
             try {
@@ -135,15 +127,15 @@ class PbtxKeyStoreUtility {
                     uakey += ","
                 }
 
-                Log.d("ProtoMessageUakey~>", "$uakey")
+                System.out.println("ProtoMessageUakey: $uakey")
                 protobufTrial(destination)
 
                 var signMsg = sign(
-                    "0102030405060708090a0b0c0d0e0f".toByteArray(),
+                    dataMsg,
                     keyEntry
                 )
                 if (signMsg != null) {
-                    Log.d("ProtoMessageSign~>", "${signMsg.toHexString()}")
+                    System.out.println("ProtoMessageSignMsg: ${signMsg.toHexString()}")
                 }
 
             } catch (ex: Exception) {
