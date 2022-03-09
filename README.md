@@ -7,7 +7,7 @@ This Kotlin library will provide a set of primitives that allow building PBTX cl
 
 Private keys are stored in Android Keystore provider. 
 
-1.1. `byte[] PBTX.createKey(String alias)` lenerates a new `secp256r1` keypair and returns the public key as `pbtx.PublicKey` protobuf message.
+1.1. `byte[] PBTX.createKey(String alias)` generates a new `secp256r1` keypair and returns the public key as `pbtx.PublicKey` protobuf message.
 
 1.2. `PBTX.listKeys()` lists existing keys and provides them as as an array of (byte[], String) tuples, containing `pbtx.PublicKey` messages and correspomnding aliases.
 
