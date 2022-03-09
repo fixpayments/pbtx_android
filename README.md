@@ -9,7 +9,7 @@ Private keys are stored in Android Keystore provider.
 
 1.1. `byte[] PBTX.createKey(String alias)` generates a new `secp256r1` keypair and returns the public key as `pbtx.PublicKey` protobuf message.
 
-1.2. `PBTX.listKeys()` lists existing keys and provides them as as an array of (byte[], String) tuples, containing `pbtx.PublicKey` messages and correspomnding aliases.
+1.2. `PBTX.listKeys()` lists existing keys and provides them as an array of (byte[], String) tuples, containing `pbtx.PublicKey` messages and corresponding aliases.
 
 1.3. `PBTX.deleteKey(String alias)` deletes a key from keystore.
 
