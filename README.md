@@ -7,10 +7,10 @@ This Kotlin library will provide a set of primitives that allow building PBTX cl
 
 Update Settings.gradle like following
 
-``
-include ':app'
+```
+include ':app' 
 include ':ekisandroidkeystoresignatureprovider'
-``
+```
 
 Update build.gradle of app directory
 
