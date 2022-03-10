@@ -46,16 +46,12 @@ class EkisAndroidKeyStoreSignatureProviderInstrumentedTest {
 
         // Use the key that was just added to the keystore to sign a transaction.
 
-        PbtxEkis.generateAndroidKeyStoreKey(TEST_CONST_TEST_KEY_NAME)
+        PbtxEkis.createKey(TEST_CONST_TEST_KEY_NAME)
 
-        var mPublicKeys = PbtxEkis.publicKey(
-            password = null,
-            "0102030405060708090a0b0c0d0e0f".toByteArray(),
-            loadStoreParameter = null
+        var mPublicKeys = PbtxEkis.signData(
+                "0102030405060708090a0b0c0d0e0f".toByteArray(),
+                TEST_CONST_TEST_KEY_NAME
         )
-
-        Log.e("TAG", "public_keys:" + mPublicKeys.size)
-
 
     }
 
