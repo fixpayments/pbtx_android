@@ -114,6 +114,26 @@ class PbtxEkis {
 
             return mList;
         }
+        
+        
+        /**
+         * Delete key in the Android KeyStore with matching the alias name.
+         *
+         * @param alias : Alias name of the key needs to be deleted.
+         */
+        @Throws(AndroidKeyStoreDeleteError::class)
+        @JvmStatic
+        fun deleteKey(alias: String) {
+            try {
+                val ks: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply {
+                    load(null)
+                }
+                ks.deleteEntry(alias)
+            } catch (ex: Exception) {
+                throw AndroidKeyStoreDeleteError(DELETE_KEY_KEYSTORE_GENERIC_ERROR, ex)
+            }
+        }
+
 
 
         private fun getKeystore(loadStoreParameter: KeyStore.LoadStoreParameter?): KeyStore {
@@ -198,24 +218,6 @@ class PbtxEkis {
 
         }
 
-
-        /**
-         * Delete key in the Android KeyStore with matching the alias name.
-         *
-         * @param alias : Alias name of the key needs to be deleted.
-         */
-        @Throws(AndroidKeyStoreDeleteError::class)
-        @JvmStatic
-        fun deleteKey(alias: String) {
-            try {
-                val ks: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply {
-                    load(null)
-                }
-                ks.deleteEntry(alias)
-            } catch (ex: Exception) {
-                throw AndroidKeyStoreDeleteError(DELETE_KEY_KEYSTORE_GENERIC_ERROR, ex)
-            }
-        }
 
         /**
          * Generate a default [KeyGenParameterSpec.Builder] with
