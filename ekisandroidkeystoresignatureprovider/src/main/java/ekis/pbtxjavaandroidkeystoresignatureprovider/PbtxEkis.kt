@@ -70,7 +70,7 @@ class PbtxEkis {
         }
 
         /**
-         * Generate a new key inside AndroidKeyStore by the given [alias] and return the new key in EOS format
+         * Generate a new key inside AndroidKeyStore by the given [alias] and return the new key in bye[] format
          *
          * The given [alias] is the identity of the key. The new key will be generated with the Default [KeyGenParameterSpec] from the [generateDefaultKeyGenParameterSpecBuilder]
          */
@@ -89,27 +89,22 @@ class PbtxEkis {
          * @param alias String - the key's identity
          * @param password KeyStore.ProtectionParameter? - the password to load all the keys
          * @param loadStoreParameter KeyStore.LoadStoreParameter? - the KeyStore Parameter to load the KeyStore instance
-         * @return String - the SECP256R1 key in the Android KeyStore
+         * @return Array of public Keys 
          */
 
         @Throws(QueryAndroidKeyStoreError::class)
         @JvmStatic
-        fun publicKey(
-            password: KeyStore.ProtectionParameter?,
-            dataMsg: ByteArray,
-            loadStoreParameter: KeyStore.LoadStoreParameter?
-        ): ArrayList<KeyModel> {
+        fun listKeys(): ArrayList<KeyModel> {
             var mList: ArrayList<KeyModel> = ArrayList();
 
             try {
                 val keyStore =
-                    getKeystore(loadStoreParameter)
+                    getKeystore(null)
                 var aliasList = keyStore.aliases().toList()
                 aliasList.forEach() {
 
-                    var keyModel = getProtobufKey(keyStore, it, password)
+                    var keyModel = getProtobufKey(keyStore, it, null)
                     mList.add(keyModel)
-
 
                 }
             } catch (ex: Exception) {
@@ -169,7 +164,6 @@ class PbtxEkis {
          *
          * @param data ByteArray - data to be signed
          * @param alias String - identity of the key to be used for signing
-         * @param password KeyStore.ProtectionParameter - password of the key
          * @return Binary version of the signature
          * @throws AndroidKeyStoreSigningError
          */
@@ -194,32 +188,6 @@ class PbtxEkis {
             }
         }
 
-        /**
-         * Delete a key inside Android KeyStore by its alias
-         *
-         * @param keyAliasToDelete String - the alias of the key to delete
-         * @param loadStoreParameter KeyStore.LoadStoreParameter? - the KeyStore Parameter to load the KeyStore instance
-         * @throws AndroidKeyStoreDeleteError
-         */
-        @Throws(AndroidKeyStoreDeleteError::class)
-        @JvmStatic
-        fun deleteKeyByAlias(
-            keyAliasToDelete: String,
-            loadStoreParameter: KeyStore.LoadStoreParameter?
-        ): Boolean {
-            try {
-                val ks: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply {
-                    load(loadStoreParameter)
-                }
-                ks.deleteEntry(keyAliasToDelete)
-                // If the key still exists, return false. Otherwise, return true
-                return !ks.containsAlias(keyAliasToDelete)
-            } catch (ex: Exception) {
-                throw AndroidKeyStoreDeleteError(DELETE_KEY_KEYSTORE_GENERIC_ERROR, ex)
-            }
-        }
-
-
         private fun protobufKeyModel(key: ByteArray, alias: String): KeyModel {
 
             var keyModel = KeyModel();
@@ -232,17 +200,16 @@ class PbtxEkis {
 
 
         /**
-         * Delete all keys in the Android KeyStore
+         * Delete key in the Android KeyStore with matching the alias name.
          *
-         * @param loadStoreParameter KeyStore.LoadStoreParameter? - the KeyStore Parameter to load the KeyStore instance
+         * @param alias : Alias name of the key needs to be deleted.
          */
-
         @Throws(AndroidKeyStoreDeleteError::class)
         @JvmStatic
-        fun deleteKeysFromAlias(loadStoreParameter: KeyStore.LoadStoreParameter?, alias: String) {
+        fun deleteKey(alias: String) {
             try {
                 val ks: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply {
-                    load(loadStoreParameter)
+                    load(null)
                 }
                 ks.deleteEntry(alias)
             } catch (ex: Exception) {
