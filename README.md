@@ -7,15 +7,15 @@ This Kotlin library will provide a set of primitives that allow building PBTX cl
 
 Private keys are stored in Android Keystore provider. 
 
-1.1. Generate a new `secp256r1` keypair and return the public key as `pbtx.PublicKey` protobuf message.
+1.1. `byte[] PBTX.createKey(String alias)` generates a new `secp256r1` keypair and returns the public key as `pbtx.PublicKey` protobuf message.
 
-1.2. List existing keys and provide them as `pbtx.PublicKey` messages.
+1.2. `PBTX.listKeys()` lists existing keys and provides them as an array of (byte[], String) tuples, containing `pbtx.PublicKey` messages and corresponding aliases.
 
-1.3. Delete a key from keystore (takes `pbtx.PublicKey` as argument)
+1.3. `PBTX.deleteKey(String alias)` deletes a key from keystore.
 
 ## 2. Low-level signatures
 
-2.1. Take an input byte array and `pbtx.PublicKey` as arguments, and return a signature as a byte array in the format described in PBTX protocol.
+2.1. `byte[] PBTX.signData(byte[] data, String alias)` signs the input data with a key specified in the alias, and returns the 66-byte raw signature as described in PBTX protocol.
 
 ## 3. PBTX transaction generator
 
