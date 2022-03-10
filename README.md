@@ -3,6 +3,55 @@ PBTX client library for Android devices
 
 This Kotlin library will provide a set of primitives that allow building PBTX client applicatios for Android devices.
 
+## Steps of Installation
+
+Update Settings.gradle like following
+
+``
+include ':app'
+include ':ekisandroidkeystoresignatureprovider'
+``
+
+Update build.gradle of app directory
+
+```
+dependencies {
+
+      ..     
+      implementation project(':ekisandroidkeystoresignatureprovider')
+      ..
+      
+}
+
+```
+
+## Usage
+
+Create a public key 
+
+``
+var publicKey : byte[]  =  PbtxEkis.createKey("alias")
+``
+
+
+List of Existing keys from keystore
+
+``
+var KeyList = PbtxEkis.listKeys()
+``
+
+Delete Key with name of the alias.
+
+``
+PbtxEkis.deleteKey("alias")
+``
+
+Sign Data array with private key of keystore with alias name
+
+``
+var signData : byte[] = PbtxEkis.signData(byte[] data, String alias)
+``
+
 ## 1. Low-level key management
 
 Private keys are stored in Android Keystore provider. 
