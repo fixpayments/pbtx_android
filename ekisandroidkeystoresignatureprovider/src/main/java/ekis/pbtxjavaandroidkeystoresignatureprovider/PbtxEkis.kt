@@ -75,7 +75,7 @@ class PbtxEkis {
          * The given [alias] is the identity of the key. The new key will be generated with the Default [KeyGenParameterSpec] from the [generateDefaultKeyGenParameterSpecBuilder]
          */
         @JvmStatic
-        fun generateAndroidKeyStoreKey(alias: String) {
+        fun createKey(alias: String) {
             // Create a default KeyGenParameterSpec
             val keyGenParameterSpec: KeyGenParameterSpec =
                 generateDefaultKeyGenParameterSpecBuilder(alias).build()
