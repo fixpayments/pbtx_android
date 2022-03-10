@@ -1,7 +1,7 @@
 package ekis.pbtxjavaandroidkeystoresignatureprovider.errors
 
 /**
- * Error content definition for EOSIO Signature Provider for AndroidKeyStore and EOSIO AndroidKeyStore Utility
+ * Error content definition for ekis Signature Provider for AndroidKeyStore and ekis AndroidKeyStore Utility
  */
 class ErrorString {
     companion object {

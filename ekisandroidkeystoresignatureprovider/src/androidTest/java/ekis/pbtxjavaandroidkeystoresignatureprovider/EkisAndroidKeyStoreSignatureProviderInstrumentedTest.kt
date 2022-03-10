@@ -3,7 +3,6 @@ package ekis.pbtxjavaandroidkeystoresignatureprovider
 import android.util.Log
 import androidx.test.runner.AndroidJUnit4
 import com.google.crypto.tink.subtle.EllipticCurves
-import ekis.pbtxjavaandroidkeystoresignatureprovider.PbtxKeyStoreUtility
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -16,7 +15,7 @@ import java.security.interfaces.ECPublicKey
 import java.security.spec.X509EncodedKeySpec
 
 /**
- * Test class for [EosioAndroidKeyStoreSignatureProvider]
+ * Test class for [ekisAndroidKeyStoreSignatureProvider]
  */
 @RunWith(AndroidJUnit4::class)
 class EkisAndroidKeyStoreSignatureProviderInstrumentedTest {
@@ -47,9 +46,9 @@ class EkisAndroidKeyStoreSignatureProviderInstrumentedTest {
 
         // Use the key that was just added to the keystore to sign a transaction.
 
-        PbtxKeyStoreUtility.generateAndroidKeyStoreKey(TEST_CONST_TEST_KEY_NAME)
+        PbtxEkis.generateAndroidKeyStoreKey(TEST_CONST_TEST_KEY_NAME)
 
-        var mPublicKeys = PbtxKeyStoreUtility.publicKeys(
+        var mPublicKeys = PbtxEkis.publicKey(
             password = null,
             "0102030405060708090a0b0c0d0e0f".toByteArray(),
             loadStoreParameter = null
@@ -57,7 +56,6 @@ class EkisAndroidKeyStoreSignatureProviderInstrumentedTest {
 
         Log.e("TAG", "public_keys:" + mPublicKeys.size)
 
-//        PbtxKeyStoreUtility.deleteAllKeys(loadStoreParameter = null)
 
     }
 

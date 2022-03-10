@@ -62,8 +62,8 @@ message KeyWeight {
     uint32 weight = 2;
 }
 
-// for EOSIO_KEY key type, the key_bytes contains a binary
-// representation of a public key in EOSIO compatible format.
+// for ekis_KEY key type, the key_bytes contains a binary
+// representation of a public key in ekis compatible format.
 message PublicKey {
     KeyType type = 1;
     bytes key_bytes = 2;
