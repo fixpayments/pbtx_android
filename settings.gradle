@@ -8,4 +8,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "EKIS"
 include ':app'
-include ':ekisandroidkeystoresignatureprovider'
+include ':pbtxKeyProvider'

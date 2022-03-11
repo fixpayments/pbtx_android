@@ -9,7 +9,7 @@ Update Settings.gradle like following
 
 ```
 include ':app' 
-include ':ekisandroidkeystoresignatureprovider'
+include ':pbtxKeyProvider'
 ```
 
 Update build.gradle of app directory
@@ -18,7 +18,7 @@ Update build.gradle of app directory
 dependencies {
 
       ..     
-      implementation project(':ekisandroidkeystoresignatureprovider')
+      implementation project(':pbtxKeyProvider')
       ..
       
 }
