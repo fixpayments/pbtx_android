@@ -1,7 +1,9 @@
 package ekis.PBTX.utils
 
 import com.google.crypto.tink.subtle.EllipticCurves
+import com.google.protobuf.ByteString
 import ekis.PBTX.Model.KeyModel
+import pbtx.Pbtx
 import java.security.KeyFactory
 import java.security.KeyStore
 import java.security.interfaces.ECPublicKey
@@ -48,7 +50,7 @@ class PbtxUtils {
             System.arraycopy(ba, 0, destination, 0, 1)
             System.arraycopy(bytes, 0, destination, 1, bytes.size)
 
-            return protobufKeyModel(destination, alias)
+            return protobufKeyModel(createProtoMessage(destination), alias)
         }
 
         /**
@@ -62,6 +64,18 @@ class PbtxUtils {
 
             return keyModel
 
+        }
+
+        private fun createProtoMessage(key: ByteArray): ByteArray {
+
+            val byteString = ByteString.copyFrom(key);
+
+            val protoBufMessage = Pbtx.PublicKey.newBuilder()
+                    .setKeyBytes(byteString)
+                    .setType(Pbtx.KeyType.EKIS_KEY)
+                    .build()
+
+            return protoBufMessage.toByteArray()
         }
 
     }
