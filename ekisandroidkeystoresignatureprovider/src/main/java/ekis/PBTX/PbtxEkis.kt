@@ -63,7 +63,11 @@ class PbtxEkis {
             kpg.initialize(keyGenParameterSpec)
             kpg.generateKeyPair()
 
-            return getProtobufKey(getKeystore(null), alias, null).key
+            var mKey : ByteArray= getProtobufKey(getKeystore(null), alias, null).key
+
+            System.out.println("key:"+mKey)
+
+            return mKey
 
 
         }

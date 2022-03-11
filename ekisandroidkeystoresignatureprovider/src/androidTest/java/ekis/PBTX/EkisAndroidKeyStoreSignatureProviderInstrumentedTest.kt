@@ -40,8 +40,6 @@ class EkisAndroidKeyStoreSignatureProviderInstrumentedTest {
         // Use the key that was just added to the keystore to sign a transaction.
 
         PbtxEkis.createKey(TEST_CONST_TEST_KEY_NAME)
-
-
     }
 
     @Test
@@ -69,10 +67,14 @@ class EkisAndroidKeyStoreSignatureProviderInstrumentedTest {
     @Test
     fun signData() {
 
-        var mPublicKeys = PbtxEkis.signData(
+        var mPublicKeys : ByteArray?= PbtxEkis.signData(
                 "0102030405060708090a0b0c0d0e0f".toByteArray(),
                 TEST_CONST_TEST_KEY_NAME
         )
+
+        mPublicKeys?.forEach {
+            System.out.print("Key " + it);
+        }
 
     }
 
