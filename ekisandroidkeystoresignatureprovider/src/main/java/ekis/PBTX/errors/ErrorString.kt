@@ -1,4 +1,4 @@
-package ekis.pbtxjavaandroidkeystoresignatureprovider.errors
+package ekis.PBTX.errors
 
 /**
  * Error content definition for ekis Signature Provider for AndroidKeyStore and ekis AndroidKeyStore Utility

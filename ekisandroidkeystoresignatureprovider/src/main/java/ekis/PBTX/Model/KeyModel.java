@@ -1,8 +1,4 @@
-package ekis.pbtxjavaandroidkeystoresignatureprovider.Model;
-
-import com.google.protobuf.Message;
-
-import java.util.ArrayList;
+package ekis.PBTX.Model;
 
 public class KeyModel {
 
