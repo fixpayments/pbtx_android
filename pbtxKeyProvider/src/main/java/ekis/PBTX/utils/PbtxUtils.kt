@@ -40,6 +40,10 @@ class PbtxUtils {
                     ecPublicKey.w
             )
 
+            return protobufKeyModel(createProtoMessage(additionByteAdd(bytes)), alias)
+        }
+
+        fun additionByteAdd(bytes: ByteArray): ByteArray {
             val i = 1
             val b = i.toByte()
             val ba = ByteArray(1)
@@ -50,7 +54,7 @@ class PbtxUtils {
             System.arraycopy(ba, 0, destination, 0, 1)
             System.arraycopy(bytes, 0, destination, 1, bytes.size)
 
-            return protobufKeyModel(createProtoMessage(destination), alias)
+            return destination
         }
 
         /**
@@ -66,7 +70,7 @@ class PbtxUtils {
 
         }
 
-        private fun createProtoMessage(key: ByteArray): ByteArray {
+        fun createProtoMessage(key: ByteArray): ByteArray {
 
             val byteString = ByteString.copyFrom(key);
 
@@ -84,9 +88,9 @@ class PbtxUtils {
             val byteString = ByteString.copyFrom(key);
 
             val protoBufMessage = Pbtx.Authority.newBuilder()
-                .addSigs(byteString)
-                .setType(Pbtx.KeyType.EKIS_KEY)
-                .build()
+                    .addSigs(byteString)
+                    .setType(Pbtx.KeyType.EKIS_KEY)
+                    .build()
 
             return protoBufMessage.toByteArray()
         }

@@ -54,10 +54,10 @@ class EkisTest {
     @Test
     fun signDataTest() {
 
-        var mPublicKeys: ByteArray? = PbtxEkis.signData("0102030405060708090a0b0c0d0e0f".toByteArray(),
+        var singature: ByteArray? = PbtxEkis.signData("0102030405060708090a0b0c0d0e0f".toByteArray(),
                 TEST_CONST_TEST_KEY_NAME)
-        Log.d("EKisTest", "signedData :: " + mPublicKeys?.size)
-        Assert.assertNotNull(mPublicKeys)
+        Log.d("EKisTest", "signature :: ${singature?.toHexString()}")
+        Assert.assertNotNull(singature)
     }
 
     @Test
