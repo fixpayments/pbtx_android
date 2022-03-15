@@ -2,6 +2,7 @@ package ekis.PBTX
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import com.google.crypto.tink.subtle.EllipticCurves
 import ekis.PBTX.Model.KeyModel
 import ekis.PBTX.errors.AndroidKeyStoreDeleteError
 import ekis.PBTX.errors.AndroidKeyStoreSigningError
@@ -13,10 +14,22 @@ import ekis.PBTX.errors.ErrorString.Companion.QUERY_ANDROID_KEYSTORE_GENERIC_ERR
 import ekis.PBTX.errors.InvalidKeyGenParameter
 import ekis.PBTX.errors.QueryAndroidKeyStoreError
 import ekis.PBTX.utils.PbtxUtils
+import ekis.PBTX.utils.PbtxUtils.Companion.additionByteAdd
+import ekis.PBTX.utils.PbtxUtils.Companion.createCanonicalSignature
+import org.bitcoinj.core.ECKey.ECDSASignature
+import org.bouncycastle.asn1.ASN1InputStream
+import org.bouncycastle.asn1.ASN1Integer
+import org.bouncycastle.asn1.DLSequence
+import java.io.IOException
+import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.Signature
+import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
+import java.security.spec.X509EncodedKeySpec
+import java.util.*
+
 
 /**
  * Utility class provides cryptographic methods to manage keys in the Android KeyStore Signature Provider and uses the keys to sign transactions.
@@ -27,6 +40,8 @@ class PbtxEkis {
         const val ANDROID_KEYSTORE: String = "AndroidKeyStore"
         private const val ANDROID_ECDSA_SIGNATURE_ALGORITHM: String = "SHA256withECDSA"
         private const val SECP256R1_CURVE_NAME = "secp256r1"
+        private const val CHECKSUM_BYTES = 4
+        private const val SECP256R1_AND_PRIME256V1_CHECKSUM_VALIDATION_SUFFIX = "R1"
 
         /**
          * Generate a new key inside Android KeyStore by the given [keyGenParameterSpec] and return the new key in EOS format
@@ -137,7 +152,7 @@ class PbtxEkis {
         }
 
         /**
-         * Sign data with a key in the KeyStore.
+         * Sign data with a private and return as a signature.
          *
          * @param data ByteArray - data to be signed
          * @param alias String - identity of the key to be used for signing
@@ -148,19 +163,66 @@ class PbtxEkis {
         @JvmStatic
         fun signData(data: ByteArray, alias: String): ByteArray? {
             try {
+
                 var keyStore = getKeystore(null)
                 val keyEntry = keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry
 
-                return Signature.getInstance(ANDROID_ECDSA_SIGNATURE_ALGORITHM).run {
+                var signature = Signature.getInstance(ANDROID_ECDSA_SIGNATURE_ALGORITHM).run {
                     initSign(keyEntry.privateKey)
                     update(data)
                     sign()
                 }
 
+                val ecPublicKey =
+                        KeyFactory.getInstance(keyEntry.certificate.publicKey.algorithm).generatePublic(
+                                X509EncodedKeySpec(keyEntry.certificate.publicKey.encoded)
+                        ) as ECPublicKey
+
+                val keyData = EllipticCurves.pointEncode(
+                        EllipticCurves.CurveType.NIST_P256,
+                        EllipticCurves.PointFormatType.COMPRESSED,
+                        ecPublicKey.w
+                )
+
+                val ecSignature = decodeFromDER(signature)
+                val canonicalSignature = createCanonicalSignature(ecSignature.r, ecSignature.s, data, keyData)
+
+                return additionByteAdd(canonicalSignature)
+
             } catch (ex: Exception) {
                 throw AndroidKeyStoreSigningError(ex)
             }
+
         }
+
+        /**
+         * Decoding the signature to ECSignature from DER format.
+         *
+         * @param signature : Signature signed from private key
+         *
+         * @return ECDSASignature
+         *
+         */
+        private fun decodeFromDER(signature: ByteArray?): ECDSASignature {
+            try {
+                ASN1InputStream(signature).use { decoder ->
+                    val seq = decoder.readObject() as DLSequence
+                            ?: throw RuntimeException("Reached past end of ASN.1 stream.")
+                    val r: ASN1Integer
+                    val s: ASN1Integer
+                    try {
+                        r = seq.getObjectAt(0) as ASN1Integer
+                        s = seq.getObjectAt(1) as ASN1Integer
+                    } catch (e: ClassCastException) {
+                        throw IllegalArgumentException(e)
+                    }
+                    return ECDSASignature(r.positiveValue, s.positiveValue)
+                }
+            } catch (e: IOException) {
+                throw RuntimeException(e)
+            }
+        }
+
 
         /**
          * Generate a default [KeyGenParameterSpec.Builder] with
