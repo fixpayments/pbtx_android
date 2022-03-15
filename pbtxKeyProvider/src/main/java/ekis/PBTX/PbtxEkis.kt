@@ -2,8 +2,6 @@ package ekis.PBTX
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import android.util.Log
-import com.google.crypto.tink.subtle.Bytes
 import com.google.crypto.tink.subtle.EllipticCurves
 import ekis.PBTX.Model.KeyModel
 import ekis.PBTX.errors.AndroidKeyStoreDeleteError
@@ -17,27 +15,12 @@ import ekis.PBTX.errors.InvalidKeyGenParameter
 import ekis.PBTX.errors.QueryAndroidKeyStoreError
 import ekis.PBTX.utils.EOSFormatter
 import ekis.PBTX.utils.PbtxUtils
-import ekis.PBTX.utils.PbtxUtils.Companion.createProtoMessage
-import org.bitcoinj.core.ECKey
 import org.bitcoinj.core.ECKey.ECDSASignature
-import org.bitcoinj.core.Sha256Hash
-import org.bitcoinj.core.Utils
-import org.bitcoinj.core.VarInt
-import org.bitcoinj.crypto.KeyCrypterException
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.DLSequence
-import org.bouncycastle.crypto.digests.RIPEMD160Digest
-import org.bouncycastle.crypto.params.KeyParameter
-import org.bouncycastle.util.encoders.Base64
-import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.math.BigInteger
-import java.nio.charset.StandardCharsets
-import java.security.KeyFactory
-import java.security.KeyPairGenerator
-import java.security.KeyStore
-import java.security.Signature
+import java.security.*
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
@@ -196,16 +179,9 @@ class PbtxEkis {
                         EllipticCurves.PointFormatType.COMPRESSED,
                         ecPublicKey.w
                 )
-                Log.d("EKisTest", "public Key :   ${keyData.size}")
-
-                var pubProtoMessage = createProtoMessage(PbtxUtils.additionByteAdd(keyData))
 
                 val ecSign = decodeFromDER(signature)
-                Log.d("EKisTest", "public Key proto message :   ${pubProtoMessage.toHexString()}")
-
                 val canonicalSignature = EOSFormatter.convertDERSignatureToEOSFormat(ecSign.r, ecSign.s, data, keyData)
-
-                Log.d("EKisTest", "canonicalSignature bytes :   " + canonicalSignature.toHexString())
 
                 return PbtxUtils.additionByteAdd(canonicalSignature)
 
@@ -213,41 +189,6 @@ class PbtxEkis {
                 throw AndroidKeyStoreSigningError(ex)
             }
 
-        }
-
-//        @Throws(KeyCrypterException::class)
-//        fun signMessage(message: String, aesKey: KeyParameter?): String? {
-//            val data = formatMessageForSigning(message)
-//            val hash = Sha256Hash.twiceOf(data)
-//            val sig: ECDSASignature = sign(hash, aesKey)
-//            val recId: Byte = findRecoveryId(hash, sig)
-//            val headerByte = recId + 27 + if (isCompressed()) 4 else 0
-//            val sigData = ByteArray(65) // 1 header + 32 bytes for R + 32 bytes for S
-//            sigData[0] = headerByte.toByte()
-//            System.arraycopy(Utils.bigIntegerToBytes(sig.r, 32), 0, sigData, 1, 32)
-//            System.arraycopy(Utils.bigIntegerToBytes(sig.s, 32), 0, sigData, 33, 32)
-//            return String(Base64.encode(sigData), StandardCharsets.UTF_8)
-//        }
-//
-//        private fun formatMessageForSigning(message: String): ByteArray? {
-//            return try {
-//                val bos = ByteArrayOutputStream()
-//                bos.write(ECKey.BITCOIN_SIGNED_MESSAGE_HEADER_BYTES.size)
-//                bos.write(ECKey.BITCOIN_SIGNED_MESSAGE_HEADER_BYTES)
-//                val messageBytes = message.toByteArray(StandardCharsets.UTF_8)
-//                val size = VarInt(messageBytes.size.toLong())
-//                bos.write(size.encode())
-//                bos.write(messageBytes)
-//                bos.toByteArray()
-//            } catch (e: IOException) {
-//                throw java.lang.RuntimeException(e) // Cannot happen.
-//            }
-//        }
-
-        fun ByteArray.toHexString(): String {
-            return this.joinToString("") {
-                java.lang.String.format("%02x", it)
-            }
         }
 
         fun decodeFromDER(bytes: ByteArray?): ECDSASignature {
@@ -270,84 +211,6 @@ class PbtxEkis {
             }
         }
 
-
-        /**
-         * Adding checksum to signature
-         *
-         * @param signature - signature to get checksum added
-         */
-        private fun addCheckSumToSignature(signature: ByteArray, keyTypeByteArray: ByteArray): ByteArray? {
-            val signatureWithKeyType = Bytes.concat(signature, keyTypeByteArray)
-            val signatureRipemd160: ByteArray = digestRIPEMD160(signatureWithKeyType)
-            val checkSum = Arrays.copyOfRange(signatureRipemd160, 0, CHECKSUM_BYTES)
-            return Bytes.concat(signature, checkSum)
-        }
-
-
-        /**
-         * Digesting input byte[] to RIPEMD160 format
-         *
-         * @param input - input byte[]
-         * @return RIPEMD160 format
-         */
-        private fun digestRIPEMD160(input: ByteArray): ByteArray {
-            val digest = RIPEMD160Digest()
-            val output = ByteArray(digest.digestSize)
-            digest.update(input, 0, input.size)
-            digest.doFinal(output, 0)
-            return output
-        }
-
-        @Throws(java.lang.Exception::class)
-        fun extractR(signature: ByteArray): BigInteger {
-            val startR = if (signature[1].toUnsignedInt().and(0) != 0) 3 else 2
-            val lengthR = signature[startR + 1].toInt()
-            return BigInteger(Arrays.copyOfRange(signature, startR + 2, startR + 2 + lengthR))
-        }
-
-        @Throws(java.lang.Exception::class)
-        fun extractS(signature: ByteArray): BigInteger {
-            val startR = if (signature[1].toUnsignedInt().and(0) != 0) 3 else 2
-            val lengthR = signature[startR + 1].toInt()
-            val startS = startR + 2 + lengthR
-            val lengthS = signature[startS + 1].toInt()
-            return BigInteger(Arrays.copyOfRange(signature, startS + 2, startS + 2 + lengthS))
-        }
-
-
-        @Throws(java.lang.Exception::class)
-        fun derSign(r: BigInteger, s: BigInteger): ByteArray? {
-            val rb = r.toByteArray()
-            val sb = s.toByteArray()
-            val off = 2 + 2 + rb.size
-            val tot = off + (2 - 2) + sb.size
-            val der = ByteArray(tot + 2)
-            der[0] = 0x30
-            der[1] = (tot and 0xff).toByte()
-            der[2 + 0] = 0x02
-            der[2 + 1] = (rb.size and 0xff).toByte()
-            System.arraycopy(rb, 0, der, 2 + 2, rb.size)
-            der[off + 0] = 0x02
-            der[off + 1] = (sb.size and 0xff).toByte()
-            System.arraycopy(sb, 0, der, off + 2, sb.size)
-            return der
-        }
-
-//        /** Extract the k that was used to sign the signature.  */
-//        @Throws(java.lang.Exception::class)
-//        fun extractK(
-//            signature: ByteArray?,
-//            h: BigInteger?,
-//            priv: ECPrivateKey
-//        ): BigInteger? {
-//            val x: BigInteger = priv.getS()
-//            val n: BigInteger = priv.getParams().getOrder()
-//            val r: BigInteger = extractR(signature)
-//            val s: BigInteger = extractS(signature)
-//            return x.multiply(r).add(h).multiply(s.modInverse(n)).mod(n)
-//        }
-
-        private fun Byte.toUnsignedInt(): Int = toInt().and(0xFF)
 
         /**
          * Generate a default [KeyGenParameterSpec.Builder] with

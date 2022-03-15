@@ -54,10 +54,19 @@ class EkisTest {
     @Test
     fun signDataTest() {
 
-        var singature: ByteArray? = PbtxEkis.signData("0102030405060708090a0b0c0d0e0f".toByteArray(),
+        var singature: ByteArray? = PbtxEkis.signData("0102030405060708090a0b0c0d0e0f".decodeHex(),
                 TEST_CONST_TEST_KEY_NAME)
-        Log.d("EKisTest", "signature :: ${singature?.toHexString()}")
         Assert.assertNotNull(singature)
+    }
+
+    fun String.decodeHex(): ByteArray {
+        check(length % 2 == 0) { "Must have an even length" }
+
+        val byteIterator = chunkedSequence(2)
+                .map { it.toInt(16).toByte() }
+                .iterator()
+
+        return ByteArray(length / 2) { byteIterator.next() }
     }
 
     @Test
