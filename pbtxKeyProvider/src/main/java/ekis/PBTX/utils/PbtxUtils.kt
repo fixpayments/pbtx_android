@@ -5,10 +5,7 @@ import com.google.common.primitives.Bytes
 import com.google.crypto.tink.subtle.EllipticCurves
 import com.google.protobuf.ByteString
 import ekis.PBTX.Model.KeyModel
-import one.block.eosiojava.enums.AlgorithmEmployed
-import one.block.eosiojava.error.ErrorConstants
-import one.block.eosiojava.error.utilities.EOSFormatterError
-import one.block.eosiojava.error.utilities.LowSVerificationError
+import ekis.PBTX.enum.AlgorithmEmployed
 import org.bitcoinj.core.Sha256Hash
 import org.bitcoinj.core.Utils
 import org.bouncycastle.asn1.sec.SECNamedCurves
@@ -61,6 +58,16 @@ class PbtxUtils {
          * Half curve value of K1 key type (to calculate low S)
          */
         val HALF_CURVE_ORDER_K1: BigInteger?
+
+        /**
+         * The algorithm used to generate the object is unsupported.
+         */
+        const val UNSUPPORTED_ALGORITHM = "Unsupported algorithm!"
+
+        /**
+         * A public key could not be recovered from the signature.
+         */
+        const val COULD_NOT_RECOVER_PUBLIC_KEY_FROM_SIG = "Could not recover public key from Signature."
 
 
         /**
@@ -210,12 +217,11 @@ class PbtxUtils {
          * @param keyData byte[] of the public key
          * @return Canonical Format of the signature.
          */
-        @Throws(EOSFormatterError::class)
         fun createCanonicalSignature(r: BigInteger, s: BigInteger, signature: ByteArray, keyData: ByteArray): ByteArray {
             var s = checkAndHandleLowS(s, AlgorithmEmployed.SECP256R1)
             var recoverId = getRecoveryId(r, s!!, Sha256Hash.of(signature), keyData,
                     AlgorithmEmployed.SECP256R1)
-            check(recoverId >= 0) { ErrorConstants.COULD_NOT_RECOVER_PUBLIC_KEY_FROM_SIG }
+            check(recoverId >= 0) { COULD_NOT_RECOVER_PUBLIC_KEY_FROM_SIG }
 
             //Add RecoveryID + 27 + 4 to create the header byte
             recoverId += VALUE_TO_ADD_TO_SIGNATURE_HEADER
@@ -391,7 +397,6 @@ class PbtxUtils {
          * @return Low S value
          * @throws LowSVerificationError when the S value determination fails.
          */
-        @Throws(LowSVerificationError::class)
         private fun checkAndHandleLowS(s: BigInteger, keyType: AlgorithmEmployed): BigInteger? {
             return if (!isLowS(s, keyType)) {
                 when (keyType) {
@@ -409,13 +414,12 @@ class PbtxUtils {
          * @return boolean indicating whether S value is low
          * @throws LowSVerificationError when the S value determination fails.
          */
-        @Throws(LowSVerificationError::class)
         private fun isLowS(s: BigInteger, keyType: AlgorithmEmployed): Boolean {
             val compareResult: Int
             compareResult = when (keyType) {
                 AlgorithmEmployed.SECP256R1 -> s.compareTo(HALF_CURVE_ORDER_R1)
                 AlgorithmEmployed.SECP256K1 -> s.compareTo(HALF_CURVE_ORDER_K1)
-                else -> throw LowSVerificationError(ErrorConstants.UNSUPPORTED_ALGORITHM)
+                else -> throw Exception(UNSUPPORTED_ALGORITHM)
             }
             return compareResult == 0 || compareResult == -1
         }
