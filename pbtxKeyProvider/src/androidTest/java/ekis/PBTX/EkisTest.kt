@@ -56,6 +56,7 @@ class EkisTest {
 
         var singature: ByteArray? = PbtxEkis.signData("0102030405060708090a0b0c0d0e0f".decodeHex(),
                 TEST_CONST_TEST_KEY_NAME)
+        Log.d("EKisTest", "Signature ${singature?.toHexString()}")
         Assert.assertNotNull(singature)
     }
 

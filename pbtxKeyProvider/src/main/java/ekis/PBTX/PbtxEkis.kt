@@ -13,14 +13,18 @@ import ekis.PBTX.errors.ErrorString.Companion.GENERATE_KEY_MUST_HAS_PURPOSE_SIGN
 import ekis.PBTX.errors.ErrorString.Companion.QUERY_ANDROID_KEYSTORE_GENERIC_ERROR
 import ekis.PBTX.errors.InvalidKeyGenParameter
 import ekis.PBTX.errors.QueryAndroidKeyStoreError
-import ekis.PBTX.utils.EOSFormatter
 import ekis.PBTX.utils.PbtxUtils
+import ekis.PBTX.utils.PbtxUtils.Companion.additionByteAdd
+import ekis.PBTX.utils.PbtxUtils.Companion.createCanonicalSignature
 import org.bitcoinj.core.ECKey.ECDSASignature
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.ASN1Integer
 import org.bouncycastle.asn1.DLSequence
 import java.io.IOException
-import java.security.*
+import java.security.KeyFactory
+import java.security.KeyPairGenerator
+import java.security.KeyStore
+import java.security.Signature
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
@@ -148,7 +152,7 @@ class PbtxEkis {
         }
 
         /**
-         * Sign data with a key in the KeyStore.
+         * Sign data with a private and return as a signature.
          *
          * @param data ByteArray - data to be signed
          * @param alias String - identity of the key to be used for signing
@@ -180,10 +184,10 @@ class PbtxEkis {
                         ecPublicKey.w
                 )
 
-                val ecSign = decodeFromDER(signature)
-                val canonicalSignature = EOSFormatter.convertDERSignatureToEOSFormat(ecSign.r, ecSign.s, data, keyData)
+                val ecSignature = decodeFromDER(signature)
+                val canonicalSignature = createCanonicalSignature(ecSignature.r, ecSignature.s, data, keyData)
 
-                return PbtxUtils.additionByteAdd(canonicalSignature)
+                return additionByteAdd(canonicalSignature)
 
             } catch (ex: Exception) {
                 throw AndroidKeyStoreSigningError(ex)
@@ -191,9 +195,17 @@ class PbtxEkis {
 
         }
 
-        fun decodeFromDER(bytes: ByteArray?): ECDSASignature {
+        /**
+         * Decoding the signature to ECSignature from DER format.
+         *
+         * @param signature : Signature signed from private key
+         *
+         * @return ECDSASignature
+         *
+         */
+        private fun decodeFromDER(signature: ByteArray?): ECDSASignature {
             try {
-                ASN1InputStream(bytes).use { decoder ->
+                ASN1InputStream(signature).use { decoder ->
                     val seq = decoder.readObject() as DLSequence
                             ?: throw RuntimeException("Reached past end of ASN.1 stream.")
                     val r: ASN1Integer
