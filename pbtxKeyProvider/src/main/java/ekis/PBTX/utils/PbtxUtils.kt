@@ -78,5 +78,18 @@ class PbtxUtils {
             return protoBufMessage.toByteArray()
         }
 
+
+        fun createAuthProtoMessage(key: ByteArray): ByteArray {
+
+            val byteString = ByteString.copyFrom(key);
+
+            val protoBufMessage = Pbtx.Authority.newBuilder()
+                .addSigs(byteString)
+                .setType(Pbtx.KeyType.EKIS_KEY)
+                .build()
+
+            return protoBufMessage.toByteArray()
+        }
+
     }
 }

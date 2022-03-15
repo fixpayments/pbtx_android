@@ -56,7 +56,7 @@ class EkisTest {
 
         var mPublicKeys: ByteArray? = PbtxEkis.signData("0102030405060708090a0b0c0d0e0f".toByteArray(),
                 TEST_CONST_TEST_KEY_NAME)
-        Log.d("EKisTest", "signedData :: " + mPublicKeys?.toHexString())
+        Log.d("EKisTest", "signedData :: " + mPublicKeys?.size)
         Assert.assertNotNull(mPublicKeys)
     }
 

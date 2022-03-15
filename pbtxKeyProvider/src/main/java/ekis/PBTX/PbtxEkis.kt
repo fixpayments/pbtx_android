@@ -13,10 +13,15 @@ import ekis.PBTX.errors.ErrorString.Companion.QUERY_ANDROID_KEYSTORE_GENERIC_ERR
 import ekis.PBTX.errors.InvalidKeyGenParameter
 import ekis.PBTX.errors.QueryAndroidKeyStoreError
 import ekis.PBTX.utils.PbtxUtils
+import java.math.BigInteger
+import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.Signature
+import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
+import java.security.spec.X509EncodedKeySpec
+import java.util.*
 
 /**
  * Utility class provides cryptographic methods to manage keys in the Android KeyStore Signature Provider and uses the keys to sign transactions.
@@ -40,8 +45,8 @@ class PbtxEkis {
          */
         @JvmStatic
         private fun generateAndroidKeyStoreKey(
-                keyGenParameterSpec: KeyGenParameterSpec,
-                alias: String
+            keyGenParameterSpec: KeyGenParameterSpec,
+            alias: String
         ): ByteArray {
             // Parameter Spec must include PURPOSE_SIGN
             if (KeyProperties.PURPOSE_SIGN and keyGenParameterSpec.purposes != KeyProperties.PURPOSE_SIGN) {
@@ -59,7 +64,7 @@ class PbtxEkis {
             }
 
             val kpg: KeyPairGenerator =
-                    KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, ANDROID_KEYSTORE)
+                KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, ANDROID_KEYSTORE)
             kpg.initialize(keyGenParameterSpec)
             kpg.generateKeyPair()
 
@@ -79,7 +84,7 @@ class PbtxEkis {
         fun createKey(alias: String): ByteArray {
             // Create a default KeyGenParameterSpec
             val keyGenParameterSpec: KeyGenParameterSpec =
-                    generateDefaultKeyGenParameterSpecBuilder(alias).build()
+                generateDefaultKeyGenParameterSpecBuilder(alias).build()
 
             return generateAndroidKeyStoreKey(keyGenParameterSpec, alias)
         }
@@ -151,16 +156,73 @@ class PbtxEkis {
                 var keyStore = getKeystore(null)
                 val keyEntry = keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry
 
-                return Signature.getInstance(ANDROID_ECDSA_SIGNATURE_ALGORITHM).run {
+                var signature = Signature.getInstance(ANDROID_ECDSA_SIGNATURE_ALGORITHM).run {
                     initSign(keyEntry.privateKey)
                     update(data)
                     sign()
                 }
 
+//                Log.d("EKisTest", "signData: ${keyEntry.privateKey.encoded}")
+                // Convert ASN.1 DER signature to IEEE P1363
+
+                return signature
+
             } catch (ex: Exception) {
                 throw AndroidKeyStoreSigningError(ex)
             }
+
         }
+
+        @Throws(java.lang.Exception::class)
+        fun extractR(signature: ByteArray): BigInteger {
+            val startR = if (signature[1].toUnsignedInt().and(0) != 0) 3 else 2
+            val lengthR = signature[startR + 1].toInt()
+            return BigInteger(Arrays.copyOfRange(signature, startR + 2, startR + 2 + lengthR))
+        }
+
+        @Throws(java.lang.Exception::class)
+        fun extractS(signature: ByteArray): BigInteger {
+            val startR = if (signature[1].toUnsignedInt().and(0) != 0) 3 else 2
+            val lengthR = signature[startR + 1].toInt()
+            val startS = startR + 2 + lengthR
+            val lengthS = signature[startS + 1].toInt()
+            return BigInteger(Arrays.copyOfRange(signature, startS + 2, startS + 2 + lengthS))
+        }
+
+
+        @Throws(java.lang.Exception::class)
+        fun derSign(r: BigInteger, s: BigInteger): ByteArray? {
+            val rb = r.toByteArray()
+            val sb = s.toByteArray()
+            val off = 2 + 2 + rb.size
+            val tot = off + (2 - 2) + sb.size
+            val der = ByteArray(tot + 2)
+            der[0] = 0x30
+            der[1] = (tot and 0xff).toByte()
+            der[2 + 0] = 0x02
+            der[2 + 1] = (rb.size and 0xff).toByte()
+            System.arraycopy(rb, 0, der, 2 + 2, rb.size)
+            der[off + 0] = 0x02
+            der[off + 1] = (sb.size and 0xff).toByte()
+            System.arraycopy(sb, 0, der, off + 2, sb.size)
+            return der
+        }
+
+//        /** Extract the k that was used to sign the signature.  */
+//        @Throws(java.lang.Exception::class)
+//        fun extractK(
+//            signature: ByteArray?,
+//            h: BigInteger?,
+//            priv: ECPrivateKey
+//        ): BigInteger? {
+//            val x: BigInteger = priv.getS()
+//            val n: BigInteger = priv.getParams().getOrder()
+//            val r: BigInteger = extractR(signature)
+//            val s: BigInteger = extractS(signature)
+//            return x.multiply(r).add(h).multiply(s.modInverse(n)).mod(n)
+//        }
+
+        private fun Byte.toUnsignedInt(): Int = toInt().and(0xFF)
 
         /**
          * Generate a default [KeyGenParameterSpec.Builder] with
@@ -176,11 +238,11 @@ class PbtxEkis {
         @JvmStatic
         private fun generateDefaultKeyGenParameterSpecBuilder(alias: String): KeyGenParameterSpec.Builder {
             return KeyGenParameterSpec.Builder(
-                    alias,
-                    KeyProperties.PURPOSE_SIGN
+                alias,
+                KeyProperties.PURPOSE_SIGN
             )
-                    .setDigests(KeyProperties.DIGEST_SHA256)
-                    .setAlgorithmParameterSpec(ECGenParameterSpec(SECP256R1_CURVE_NAME))
+                .setDigests(KeyProperties.DIGEST_SHA256)
+                .setAlgorithmParameterSpec(ECGenParameterSpec(SECP256R1_CURVE_NAME))
         }
     }
 
