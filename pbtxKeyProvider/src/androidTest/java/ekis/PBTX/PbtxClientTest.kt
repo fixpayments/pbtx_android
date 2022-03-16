@@ -12,7 +12,7 @@ import org.junit.runner.RunWith
  * Test class for [ekisAndroidKeyStoreSignatureProvider]
  */
 @RunWith(AndroidJUnit4::class)
-class EkisTest {
+class PbtxClientTest {
 
     companion object {
         const val TEST_CONST_TEST_KEY_NAME = "test_key"
@@ -23,7 +23,7 @@ class EkisTest {
     val exceptionRule: ExpectedException = ExpectedException.none()
 
     /**
-     * Test [EkisTest.createKey] method
+     * Test [PbtxClientTest.createKey] method
      *
      * Generate new key and print hex string.
      */
@@ -31,18 +31,18 @@ class EkisTest {
     fun createKeyTest() {
 
         // Creating a new key
-        var key = PbtxEkis.createKey(TEST_CONST_TEST_KEY_NAME)
+        var key = PbtxClient.createKey(TEST_CONST_TEST_KEY_NAME)
         Log.d("EKisTest", "Key :: " + key.toHexString())
         Assert.assertNotNull(key)
         // Check if the key present in the size
-        assert(PbtxEkis.listKeys().size == 1)
+        assert(PbtxClient.listKeys().size == 1)
     }
 
     @Test
     fun listKeysTest() {
 
         // list of the keys present in the stores.
-        var keyList = PbtxEkis.listKeys()
+        var keyList = PbtxClient.listKeys()
 
         keyList.forEach() {
             Log.d("EKisTest", "Key :: " + it.key.toHexString())
@@ -54,7 +54,7 @@ class EkisTest {
     @Test
     fun signDataTest() {
 
-        var singature: ByteArray? = PbtxEkis.signData("0102030405060708090a0b0c0d0e0f".decodeHex(),
+        var singature: ByteArray? = PbtxClient.signData("0102030405060708090a0b0c0d0e0f".decodeHex(),
                 TEST_CONST_TEST_KEY_NAME)
         Log.d("EKisTest", "Signature ${singature?.toHexString()}")
         Assert.assertNotNull(singature)
@@ -73,9 +73,9 @@ class EkisTest {
     @Test
     fun deleteKeyTest() {
         // Use the key that was just added to the keystore to sign a transaction.
-        PbtxEkis.deleteKey(TEST_CONST_TEST_KEY_NAME)
+        PbtxClient.deleteKey(TEST_CONST_TEST_KEY_NAME)
         // Check the size after deleting the store it should be 0 key present in the store.
-        assert(PbtxEkis.listKeys().size == 0)
+        assert(PbtxClient.listKeys().size == 0)
     }
 
     fun ByteArray.toHexString(): String {
