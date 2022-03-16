@@ -3,7 +3,7 @@ package ekis.PBTX.utils
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import com.google.crypto.tink.subtle.EllipticCurves
-import ekis.PBTX.PbtxEkis
+import ekis.PBTX.PbtxClient
 
 import ekis.PBTX.errors.ErrorString
 import ekis.PBTX.errors.InvalidKeyGenParameter
@@ -73,7 +73,7 @@ class KeyStoreProvider {
             }
 
             val kpg: KeyPairGenerator =
-                    KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, PbtxEkis.ANDROID_KEYSTORE)
+                    KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, PbtxClient.ANDROID_KEYSTORE)
             kpg.initialize(keyGenParameterSpec)
             kpg.generateKeyPair()
 

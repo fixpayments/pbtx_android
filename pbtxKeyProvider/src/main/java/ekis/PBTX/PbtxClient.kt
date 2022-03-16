@@ -23,7 +23,7 @@ import java.util.*
 /**
  * Utility class provides cryptographic methods to manage keys in the Android KeyStore Signature Provider and uses the keys to sign transactions.
  */
-class PbtxEkis {
+class PbtxClient {
 
     companion object {
         const val ANDROID_KEYSTORE: String = "AndroidKeyStore"
