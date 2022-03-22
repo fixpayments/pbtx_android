@@ -30,7 +30,7 @@ dependencies {
 Create a public key 
 
 ``
-var publicKey : byte[]  =  PbtxEkis.createKey("alias")
+var publicKey : Pbtx.PublicKey  =  PbtxEkis.createKey("alias")
 ``
 
 

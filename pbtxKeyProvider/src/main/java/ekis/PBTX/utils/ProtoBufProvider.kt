@@ -34,7 +34,7 @@ class ProtoBufProvider {
         /**
          * Wrapping the byte[] in [KeyModel] Object.
          */
-        private fun protobufKeyModel(key: ByteArray, alias: String): KeyModel {
+        private fun protobufKeyModel(key: Pbtx.PublicKey, alias: String): KeyModel {
 
             var keyModel = KeyModel();
             keyModel.alias = alias
@@ -51,7 +51,7 @@ class ProtoBufProvider {
          * @return Protobuf message of the compressed public key
          *
          */
-        fun createPublicKeyProtoMessage(key: ByteArray): ByteArray {
+        fun createPublicKeyProtoMessage(key: ByteArray): Pbtx.PublicKey {
 
             val byteString = ByteString.copyFrom(key);
 
@@ -60,7 +60,7 @@ class ProtoBufProvider {
                     .setType(Pbtx.KeyType.EKIS_KEY)
                     .build()
 
-            return protoBufMessage.toByteArray()
+            return protoBufMessage
         }
     }
 
