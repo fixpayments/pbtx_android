@@ -57,7 +57,7 @@ class ProtoBufProvider {
 
             val protoBufMessage = Pbtx.PublicKey.newBuilder()
                     .setKeyBytes(byteString)
-                    .setType(Pbtx.KeyType.EKIS_KEY)
+                    .setType(Pbtx.KeyType.EOSIO_KEY)
                     .build()
 
             return protoBufMessage
