@@ -32,7 +32,7 @@ class PbtxClientTest {
 
         // Creating a new key
         var key = PbtxClient.createKey(TEST_CONST_TEST_KEY_NAME)
-        Log.d("EKisTest", "Key :: " + key.toHexString())
+        Log.d("EKisTest", "Key :: " + key.toByteArray().toHexString())
         Assert.assertNotNull(key)
         // Check if the key present in the size
         assert(PbtxClient.listKeys().size == 1)
@@ -45,7 +45,7 @@ class PbtxClientTest {
         var keyList = PbtxClient.listKeys()
 
         keyList.forEach() {
-            Log.d("EKisTest", "Key :: " + it.key.toHexString())
+            Log.d("EKisTest", "Key :: " + it.key.toByteArray().toHexString())
         }
         assert(keyList.size == 1)
     }

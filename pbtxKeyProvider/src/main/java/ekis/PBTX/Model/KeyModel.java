@@ -1,15 +1,17 @@
 package ekis.PBTX.Model;
 
+import pbtx.Pbtx;
+
 public class KeyModel {
 
-    byte[] key;
+    Pbtx.PublicKey key;
     String alias;
 
-    public byte[] getKey() {
+    public Pbtx.PublicKey getKey() {
         return key;
     }
 
-    public void setKey(byte[] key) {
+    public void setKey(Pbtx.PublicKey key) {
         this.key = key;
     }
 

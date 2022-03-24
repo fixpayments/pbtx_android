@@ -15,6 +15,7 @@ import ekis.PBTX.utils.PbtxUtils.Companion.additionByteAdd
 import ekis.PBTX.utils.ProtoBufProvider
 import ekis.PBTX.utils.ProtoBufProvider.Companion.getProtobufModels
 import ekis.PBTX.utils.SignatureProvider.Companion.getCanonicalSignature
+import pbtx.Pbtx
 import java.security.KeyStore
 import java.security.Signature
 import java.util.*
@@ -38,7 +39,7 @@ class PbtxClient {
          * @return Key : byte Array of generated public key
          */
         @JvmStatic
-        fun createKey(alias: String): ByteArray {
+        fun createKey(alias: String): Pbtx.PublicKey {
             // Create a default KeyGenParameterSpec
             val keyGenParameterSpec: KeyGenParameterSpec =
                     KeyStoreProvider.generateDefaultKeyGenParameterSpecBuilder(alias).build()
