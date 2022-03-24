@@ -30,20 +30,20 @@ dependencies {
 Create a public key 
 
 ``
-var publicKey : Pbtx.PublicKey  =  PbtxEkis.createKey("alias")
+var publicKey : Pbtx.PublicKey  =  PbtxClient.createKey("alias")
 ``
 
 
 List of Existing keys from keystore
 
 ``
-var KeyList = PbtxEkis.listKeys()
+var KeyList = PbtxClient.listKeys()
 ``
 
 Delete Key with name of the alias.
 
 ``
-PbtxEkis.deleteKey("alias")
+PbtxClient.deleteKey("alias")
 ``
 
 Sign Data array with private key of keystore with alias name
