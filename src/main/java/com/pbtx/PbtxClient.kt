@@ -52,12 +52,21 @@ class PbtxClient {
             var keyStore = getKeyStoreInstance()
             keyStore.load(null);
 
-            val privateKeyEntry = keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry
 
-            var compressedPublicKey = getCompressedPublicKey(privateKeyEntry)
+            var privateKeyEntry = loadKeyAlias(alias, keyStore)
+            if (privateKeyEntry == null) {
+                generateAndroidKeyStoreKey(keyGenParameterSpec)
+                privateKeyEntry = loadKeyAlias(alias, keyStore)
+            }
+
+            var compressedPublicKey = getCompressedPublicKey(privateKeyEntry!!)
 
             return ProtoBufProvider.createPublicKeyProtoMessage(additionByteAdd(compressedPublicKey))
 
+        }
+
+        private fun loadKeyAlias(alias: String, keyStore: KeyStore): KeyStore.PrivateKeyEntry?  {
+            return keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry?
         }
 
 
