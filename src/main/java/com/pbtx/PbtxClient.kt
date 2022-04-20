@@ -1,23 +1,21 @@
-package io.ekis.sample
+package com.pbtx
 
 import android.security.keystore.KeyGenParameterSpec
-import android.util.Log
-import io.ekis.sample.Model.KeyModel
-import io.ekis.sample.errors.AndroidKeyStoreDeleteError
-import io.ekis.sample.errors.AndroidKeyStoreSigningError
-import io.ekis.sample.errors.ErrorString.Companion.DELETE_KEY_KEYSTORE_GENERIC_ERROR
-import io.ekis.sample.errors.ErrorString.Companion.QUERY_ANDROID_KEYSTORE_GENERIC_ERROR
-import io.ekis.sample.errors.QueryAndroidKeyStoreError
-import io.ekis.sample.utils.KeyStoreProvider
-import io.ekis.sample.utils.KeyStoreProvider.Companion.generateAndroidKeyStoreKey
-import io.ekis.sample.utils.KeyStoreProvider.Companion.getCompressedPublicKey
-import io.ekis.sample.utils.KeyStoreProvider.Companion.getKeystore
-import io.ekis.sample.utils.PbtxUtils.Companion.additionByteAdd
-import io.ekis.sample.utils.ProtoBufProvider
-import io.ekis.sample.utils.ProtoBufProvider.Companion.getProtobufModels
-import io.ekis.sample.utils.SignatureProvider.Companion.getCanonicalSignature
+import com.pbtx.Model.KeyModel
+import com.pbtx.errors.AndroidKeyStoreDeleteError
+import com.pbtx.errors.AndroidKeyStoreSigningError
+import com.pbtx.errors.ErrorString.Companion.DELETE_KEY_KEYSTORE_GENERIC_ERROR
+import com.pbtx.errors.ErrorString.Companion.QUERY_ANDROID_KEYSTORE_GENERIC_ERROR
+import com.pbtx.errors.QueryAndroidKeyStoreError
+import com.pbtx.utils.KeyStoreProvider
+import com.pbtx.utils.KeyStoreProvider.Companion.generateAndroidKeyStoreKey
+import com.pbtx.utils.KeyStoreProvider.Companion.getCompressedPublicKey
+import com.pbtx.utils.KeyStoreProvider.Companion.getKeystore
+import com.pbtx.utils.PbtxUtils.Companion.additionByteAdd
+import com.pbtx.utils.ProtoBufProvider
+import com.pbtx.utils.ProtoBufProvider.Companion.getProtobufModels
+import com.pbtx.utils.SignatureProvider.Companion.getCanonicalSignature
 import pbtx.Pbtx
-import java.security.Key
 import java.security.KeyStore
 import java.security.Signature
 import java.util.*
@@ -206,45 +204,7 @@ class PbtxClient {
 
         }
 
-        /**
-         * Sign data with a private and return as a signature.
-         *
-         * @param data ByteArray - data to be signed
-         * @param alias String - identity of the key to be used for signing
-         * @return Binary version of the signature
-         * @throws AndroidKeyStoreSigningError
-         */
-        @Throws(AndroidKeyStoreSigningError::class)
-        @JvmStatic
-        fun signDataV2(data: ByteArray, alias: String): ByteArray? {
-            try {
 
-                val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
-                    load(null)
-                }
-                val entry: KeyStore.Entry = ks.getEntry(alias, null)
-                if (entry !is KeyStore.PrivateKeyEntry) {
-                    Log.w("N", "Not an instance of a PrivateKeyEntry")
-                    return null
-                }
-                Log.d("Key Entry Sign Data:", entry.toString())
-                val signature: ByteArray = Signature.getInstance(ANDROID_ECDSA_SIGNATURE_ALGORITHM).run {
-                    initSign(entry.privateKey)
-                    update(data)
-                    sign()
-                }
-
-                val compressedPublicKey = getCompressedPublicKey(entry)
-
-                val canonicalSignature = getCanonicalSignature(signature, data, compressedPublicKey)
-
-                return additionByteAdd(canonicalSignature)
-
-            } catch (ex: Exception) {
-                throw AndroidKeyStoreSigningError(ex)
-            }
-
-        }
 
     }
 
