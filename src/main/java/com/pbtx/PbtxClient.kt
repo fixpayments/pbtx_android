@@ -42,7 +42,7 @@ class PbtxClient {
          * @return Key : byte Array of generated public key
          */
         @JvmStatic
-        fun createKey(alias: String): Pbtx.PublicKey {
+        fun createKey(alias: String): ByteArray {
             // Create a default KeyGenParameterSpec
             val keyGenParameterSpec: KeyGenParameterSpec =
                 KeyStoreProvider.generateDefaultKeyGenParameterSpecBuilder(alias).build()
@@ -59,7 +59,7 @@ class PbtxClient {
 
             var compressedPublicKey = getCompressedPublicKey(privateKeyEntry!!)
 
-            return ProtoBufProvider.createPublicKeyProtoMessage(additionByteAdd(compressedPublicKey))
+            return additionByteAdd(compressedPublicKey)
 
         }
 
