@@ -26,9 +26,12 @@ import java.util.*
  */
 class PbtxClient {
 
+
     companion object {
         const val ANDROID_KEYSTORE: String = "AndroidKeyStore"
         private const val ANDROID_ECDSA_SIGNATURE_ALGORITHM: String = "SHA256withECDSA"
+        private var KEYSTORE_INSTANCE: KeyStore? = null
+        private var SIGNATURE_INSTANCE: Signature? = null
 
         /**
          * Generate a new key inside AndroidKeyStore by the given [alias] and return the new key in bye[] format
@@ -39,19 +42,29 @@ class PbtxClient {
          * @return Key : byte Array of generated public key
          */
         @JvmStatic
-        fun createKey(alias: String): Pbtx.PublicKey {
+        fun createKey(alias: String): ByteArray {
             // Create a default KeyGenParameterSpec
             val keyGenParameterSpec: KeyGenParameterSpec =
-                    KeyStoreProvider.generateDefaultKeyGenParameterSpecBuilder(alias).build()
+                KeyStoreProvider.generateDefaultKeyGenParameterSpecBuilder(alias).build()
 
-            var keyStore = generateAndroidKeyStoreKey(keyGenParameterSpec)
+            var keyStore = getKeyStoreInstance()
+            keyStore.load(null);
 
-            val privateKeyEntry = keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry
 
-            var compressedPublicKey = getCompressedPublicKey(privateKeyEntry)
+            var privateKeyEntry = loadKeyAlias(alias, keyStore)
+            if (privateKeyEntry == null) {
+                generateAndroidKeyStoreKey(keyGenParameterSpec)
+                privateKeyEntry = loadKeyAlias(alias, keyStore)
+            }
 
-            return ProtoBufProvider.createPublicKeyProtoMessage(additionByteAdd(compressedPublicKey))
+            var compressedPublicKey = getCompressedPublicKey(privateKeyEntry!!)
 
+            return additionByteAdd(compressedPublicKey)
+
+        }
+
+        private fun loadKeyAlias(alias: String, keyStore: KeyStore): KeyStore.PrivateKeyEntry?  {
+            return keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry?
         }
 
 
@@ -66,7 +79,8 @@ class PbtxClient {
             var mList: ArrayList<KeyModel> = ArrayList();
 
             try {
-                val keyStore = getKeystore(null)
+                val keyStore = getKeyStoreInstance()
+                keyStore.load(null);
                 var aliasList = keyStore.aliases().toList()
                 aliasList.forEach() {
                     var keyModel = getProtobufModels(keyStore, it, null)
@@ -81,6 +95,29 @@ class PbtxClient {
         }
 
         /**
+         * Get all (SECP256R1) keys in byte format from Android KeyStore
+         * @return Array of public Keys with the alias.
+         */
+
+        @Throws(QueryAndroidKeyStoreError::class)
+        @JvmStatic
+        fun getKey(alias: String): Pbtx.PublicKey? {
+            var pubKey: KeyStore.PrivateKeyEntry? = null
+            try {
+                val keyStore = getKeyStoreInstance()
+                keyStore.load(null);
+                pubKey = keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry
+
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                throw QueryAndroidKeyStoreError(QUERY_ANDROID_KEYSTORE_GENERIC_ERROR, ex)
+            }
+            var compressedPublicKey = getCompressedPublicKey(pubKey)
+
+            return ProtoBufProvider.createPublicKeyProtoMessage(additionByteAdd(compressedPublicKey))
+        }
+
+        /**
          * Delete key in the Android KeyStore with matching alias name.
          *
          * @param alias : Alias name of the key needs to be deleted.
@@ -89,12 +126,46 @@ class PbtxClient {
         @JvmStatic
         fun deleteKey(alias: String) {
             try {
-                val ks: KeyStore = getKeystore(null)
+                val ks: KeyStore = getKeyStoreInstance()
                 ks.deleteEntry(alias)
             } catch (ex: Exception) {
                 throw AndroidKeyStoreDeleteError(DELETE_KEY_KEYSTORE_GENERIC_ERROR, ex)
             }
         }
+
+        @JvmStatic
+        fun getPublicKeyObject(): Pbtx.PublicKey {
+            return Pbtx.PublicKey.getDefaultInstance()
+        }
+
+        @JvmStatic
+        fun getKeyStoreInstance(): KeyStore {
+            var keyStore: KeyStore? = null
+            keyStore = if (KEYSTORE_INSTANCE == null) {
+                KeyStore.getInstance("AndroidKeyStore").apply {
+                    load(null)
+                }
+            } else {
+                KEYSTORE_INSTANCE
+            }
+            KEYSTORE_INSTANCE = keyStore
+            //generateAndroidKeyStoreKey(keyGenParameterSpec)
+            return keyStore!!
+        }
+
+        @JvmStatic
+        fun getSignatureInstance(): Signature {
+            var signatureInstace: Signature? = null
+            signatureInstace = if (SIGNATURE_INSTANCE == null) {
+                Signature.getInstance(ANDROID_ECDSA_SIGNATURE_ALGORITHM)
+            } else {
+                SIGNATURE_INSTANCE
+            }
+            SIGNATURE_INSTANCE = signatureInstace
+            //generateAndroidKeyStoreKey(keyGenParameterSpec)
+            return signatureInstace!!
+        }
+
 
         /**
          * Sign data with a private and return as a signature.
@@ -109,12 +180,15 @@ class PbtxClient {
         fun signData(data: ByteArray, alias: String): ByteArray? {
             try {
 
-                var keyStore = getKeystore(null)
+                var keyStore = getKeyStoreInstance()
+                keyStore.load(null);
+
                 val keyEntry = keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry
+                Log.d("Key Entry Sign Data:", keyEntry.toString())
 
                 val compressedPublicKey = getCompressedPublicKey(keyEntry)
 
-                var signature = Signature.getInstance(ANDROID_ECDSA_SIGNATURE_ALGORITHM).run {
+                var signature = getSignatureInstance().run {
                     initSign(keyEntry.privateKey)
                     update(data)
                     sign()
@@ -129,6 +203,8 @@ class PbtxClient {
             }
 
         }
+
+
 
     }
 
