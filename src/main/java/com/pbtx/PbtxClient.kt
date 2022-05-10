@@ -101,7 +101,7 @@ class PbtxClient {
 
         @Throws(QueryAndroidKeyStoreError::class)
         @JvmStatic
-        fun getKey(alias: String): Pbtx.PublicKey? {
+        fun getKey(alias: String): ByteArray? {
             var pubKey: KeyStore.PrivateKeyEntry? = null
             try {
                 val keyStore = getKeyStoreInstance()
@@ -114,7 +114,7 @@ class PbtxClient {
             }
             var compressedPublicKey = getCompressedPublicKey(pubKey)
 
-            return ProtoBufProvider.createPublicKeyProtoMessage(additionByteAdd(compressedPublicKey))
+            return additionByteAdd(compressedPublicKey)
         }
 
         /**
