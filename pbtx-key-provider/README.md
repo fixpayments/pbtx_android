@@ -5,22 +5,24 @@ This Kotlin library will provide a set of primitives that allow building PBTX cl
 
 ## Steps of Installation
 
-- Use existing release or create a new one using jitpack
-- Add the following to the root build.gradle of your project
+Update Settings.gradle like following
+
 ```
-allprojects {
-	repositories {
-	    ...
-		maven { url 'https://jitpack.io' }
-	}
-}
+include ':app' 
+include ':pbtxKeyProvider'
 ```
-- Add the dependency in your application
+
+Update build.gradle of app directory
+
 ```
 dependencies {
-    ....
-    implementation 'com.github.fixpayments:pbtx_android:<version_tag>'
+
+      ..     
+      implementation project(':pbtxKeyProvider')
+      ..
+      
 }
+
 ```
 
 ## Usage
