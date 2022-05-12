@@ -6,13 +6,6 @@ apply plugin: 'kotlin-android-extensions'
 
 apply plugin: 'com.google.protobuf'
 
-apply plugin: 'maven-publish'
-
-sourceSets {
-    main.java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/javalite"
-}
-
-
 android {
     compileSdkVersion 30
     defaultConfig {
