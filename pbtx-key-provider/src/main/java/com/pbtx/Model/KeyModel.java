@@ -1,6 +1,6 @@
 package com.pbtx.Model;
 
-import com.pbtx.PublicKey;
+import pbtx.PublicKey;
 
 public class KeyModel {
 

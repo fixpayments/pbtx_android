@@ -1,7 +1,7 @@
 syntax = "proto3";
 option java_multiple_files = true;
 
-package com.pbtx;
+package pbtx;
 
 message TransactionBody {
     // network identity
@@ -61,8 +61,8 @@ message KeyWeight {
     uint32 weight = 2;
 }
 
-// for ekis_KEY key type, the key_bytes contains a binary
-// representation of a public key in ekis compatible format.
+// for EOSIO_KEY key type, the key_bytes contains a binary
+// representation of a public key in EOSIO compatible format.
 message PublicKey {
     KeyType type = 1;
     bytes key_bytes = 2;
@@ -75,4 +75,20 @@ message PublicKey {
 message Authority {
     KeyType type = 1;
     repeated bytes sigs = 2;
+}
+
+
+// Transactions are sent to a blockchain (such as EOSIO), and the
+// blockchain registers the event with a timestamp and transaction
+// ID. This message contains a copy of PBTX transaction and the
+// corresponding blockchain transaction attributes.
+message TransactionHistoryEntry {
+    // protobuf-encoded Transaction
+    bytes transaction = 1;
+
+    // microseconds since Epoch as recorded in the backend blockchain
+    fixed64 backend_timestamp = 2 [jstype = JS_STRING];
+
+    // transaction ID in the blockchain (normally, a 256-bit hash)
+    bytes backend_trxid = 3;
 }

@@ -6,13 +6,8 @@ apply plugin: 'kotlin-android-extensions'
 
 apply plugin: 'com.google.protobuf'
 
+apply plugin: 'maven-publish'
 
-//Remove 'com.jfrog.artifactory' plugin if you are not using Artifactory
-//apply plugin: 'com.jfrog.artifactory'
-
-/*apply plugin: 'maven-publish'*/
-
-// apply plugin: 'org.jetbrains.dokka-android'
 sourceSets {
     main.java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/javalite"
 }

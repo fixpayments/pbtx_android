@@ -14,6 +14,7 @@ import com.pbtx.utils.KeyStoreProvider.Companion.getCompressedPublicKey
 import com.pbtx.utils.PbtxUtils.Companion.additionByteAdd
 import com.pbtx.utils.ProtoBufProvider.Companion.getProtobufModels
 import com.pbtx.utils.SignatureProvider.Companion.getCanonicalSignature
+import pbtx.PublicKey
 import java.security.KeyStore
 import java.security.Signature
 import java.util.*

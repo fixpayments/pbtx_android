@@ -2,8 +2,8 @@ package com.pbtx.utils
 
 import com.google.protobuf.ByteString
 import com.pbtx.Model.KeyModel
-import com.pbtx.KeyType
-import com.pbtx.PublicKey
+import pbtx.KeyType
+import pbtx.PublicKey
 import java.security.KeyStore
 
 class ProtoBufProvider {
