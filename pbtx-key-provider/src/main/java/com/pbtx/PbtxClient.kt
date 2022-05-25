@@ -2,6 +2,7 @@ package com.pbtx
 
 import android.security.keystore.KeyGenParameterSpec
 import android.util.Log
+import com.google.protobuf.ByteString
 import com.pbtx.Model.KeyModel
 import com.pbtx.errors.AndroidKeyStoreDeleteError
 import com.pbtx.errors.AndroidKeyStoreSigningError
@@ -14,7 +15,7 @@ import com.pbtx.utils.KeyStoreProvider.Companion.getCompressedPublicKey
 import com.pbtx.utils.PbtxUtils.Companion.additionByteAdd
 import com.pbtx.utils.ProtoBufProvider.Companion.getProtobufModels
 import com.pbtx.utils.SignatureProvider.Companion.getCanonicalSignature
-import pbtx.PublicKey
+import pbtx.*
 import java.security.KeyStore
 import java.security.Signature
 import java.util.*
@@ -176,7 +177,7 @@ class PbtxClient {
          */
         @Throws(AndroidKeyStoreSigningError::class)
         @JvmStatic
-        fun signData(data: ByteArray, alias: String): ByteArray? {
+        fun signData(data: ByteArray, alias: String): ByteArray {
             try {
 
                 var keyStore = getKeyStoreInstance()
@@ -200,10 +201,41 @@ class PbtxClient {
             } catch (ex: Exception) {
                 throw AndroidKeyStoreSigningError(ex)
             }
-
         }
 
+        fun getSyncHead(networkId: Long, actor: Long): Pair<Int, Long> {
+            //TODO mcicu: these values must be taken from the backend, and stored on device
+            val seqNumber: Int = 0 //next number in sequence, stored on blockchain
+            val prevHash: Long = 0 //previous TransactionBody's hash: first 8 bytes of sha256, stored as big-endian
+            return Pair(seqNumber, prevHash)
+        }
 
+        fun signTransaction(networkId: Long, actor: Long, transactionType: Int, transactionContent: ByteArray): Transaction {
+            val (seqNumber, prevHash) = getSyncHead(networkId, actor)
+
+            val transactionBody = TransactionBody.newBuilder()
+                .setNetworkId(networkId)
+                .setActor(actor)
+                .setSeqnum(seqNumber)
+                .setPrevHash(prevHash)
+                .setTransactionType(transactionType)
+                .setTransactionContent(ByteString.copyFrom(transactionContent))
+                .build()
+
+            //TODO mcicu: Need to retrieve Permissions related to actor to determine which key will be used for signing and the alias of the key
+            //here we're using a key created with alias == actor (key must be created before signing the transaction)
+            val actorSignature = signData(transactionBody.toByteArray(), actor.toString())
+            val actorSignatureByteString = ByteString.copyFrom(actorSignature)
+
+            val authority = Authority.newBuilder()
+                .setType(KeyType.EOSIO_KEY)
+                .addSigs(actorSignatureByteString)
+
+            return Transaction.newBuilder()
+                .setBody(transactionBody.toByteString())
+                .addAuthorities(authority)
+                .build()
+        }
     }
 
 }
