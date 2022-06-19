@@ -52,7 +52,7 @@ class PbtxClientTest {
         val keyList = PbtxClient.listKeys()
 
         keyList.forEach {
-            Log.d("EKisTest", "Key :: " + it.key.toByteArray().toHexString())
+            Log.d("EKisTest", "Key :: " + it.publicKey.toByteArray().toHexString())
         }
         assert(keyList.size == initialKeyListSize + 2)
 
