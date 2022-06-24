@@ -1,12 +1,12 @@
 package com.pbtx.utils
 
 import com.google.protobuf.ByteString
-import com.pbtx.Model.KeyModel
+import com.pbtx.model.KeyModel
 import pbtx.KeyType
 import pbtx.PublicKey
 import java.security.KeyStore
 
-class ProtoBufProvider {
+class ProtobufProvider {
 
     companion object {
 
@@ -20,35 +20,12 @@ class ProtoBufProvider {
          * @return KeyModel : byte[] of the protobuf message.
          *
          */
-        fun getProtobufModels(
-            keyStore: KeyStore,
-            alias: String,
-            password: KeyStore.ProtectionParameter?
-        ): KeyModel {
+        fun getProtobufModels(keyStore: KeyStore, alias: String, password: KeyStore.ProtectionParameter?): KeyModel {
             val keyEntry = keyStore.getEntry(alias, password) as KeyStore.PrivateKeyEntry
+            val compressedPublicKey = KeyStoreProvider.getCompressedPublicKey(keyEntry)
 
-            var compressedPublicKey = KeyStoreProvider.getCompressedPublicKey(keyEntry)
-
-            return protobufKeyModel(
-                createPublicKeyProtoMessage(
-                    PbtxUtils.additionByteAdd(
-                        compressedPublicKey
-                    )
-                ), alias
-            )
-        }
-
-        /**
-         * Wrapping the byte[] in [KeyModel] Object.
-         */
-        private fun protobufKeyModel(key: PublicKey, alias: String): KeyModel {
-
-            var keyModel = KeyModel();
-            keyModel.alias = alias
-            keyModel.key = key
-
-            return keyModel
-
+            val publicKey = createPublicKeyProtoMessage(PbtxUtils.additionByteAdd(compressedPublicKey))
+            return KeyModel(publicKey, alias)
         }
 
         /**
@@ -59,15 +36,11 @@ class ProtoBufProvider {
          *
          */
         fun createPublicKeyProtoMessage(key: ByteArray): PublicKey {
-
-            val byteString = ByteString.copyFrom(key);
-
-            val protoBufMessage = PublicKey.newBuilder()
+            val byteString = ByteString.copyFrom(key)
+            return PublicKey.newBuilder()
                 .setKeyBytes(byteString)
                 .setType(KeyType.EOSIO_KEY)
                 .build()
-
-            return protoBufMessage
         }
     }
 

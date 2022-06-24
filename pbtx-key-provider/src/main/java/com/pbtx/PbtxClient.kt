@@ -1,19 +1,24 @@
 package com.pbtx
 
+import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.util.Log
 import com.google.protobuf.ByteString
-import com.pbtx.Model.KeyModel
 import com.pbtx.errors.AndroidKeyStoreDeleteError
 import com.pbtx.errors.AndroidKeyStoreSigningError
 import com.pbtx.errors.ErrorString.Companion.DELETE_KEY_KEYSTORE_GENERIC_ERROR
 import com.pbtx.errors.ErrorString.Companion.QUERY_ANDROID_KEYSTORE_GENERIC_ERROR
 import com.pbtx.errors.QueryAndroidKeyStoreError
+import com.pbtx.model.KeyModel
+import com.pbtx.persistence.PbtxDatabase
+import com.pbtx.persistence.entities.AccountRecord
+import com.pbtx.persistence.entities.RegistrationRecord
+import com.pbtx.persistence.entities.RegistrationStatus
 import com.pbtx.utils.KeyStoreProvider
 import com.pbtx.utils.KeyStoreProvider.Companion.generateAndroidKeyStoreKey
 import com.pbtx.utils.KeyStoreProvider.Companion.getCompressedPublicKey
 import com.pbtx.utils.PbtxUtils.Companion.additionByteAdd
-import com.pbtx.utils.ProtoBufProvider.Companion.getProtobufModels
+import com.pbtx.utils.ProtobufProvider
 import com.pbtx.utils.SignatureProvider.Companion.getCanonicalSignature
 import pbtx.*
 import java.security.KeyStore
@@ -24,8 +29,81 @@ import java.util.*
 /**
  * Utility class provides cryptographic methods to manage keys in the Android KeyStore Signature Provider and uses the keys to sign transactions.
  */
-class PbtxClient {
+class PbtxClient constructor(context: Context) {
 
+    private val pbtxDatabase = PbtxDatabase.getInstance(context)
+    private val accountDao = pbtxDatabase.accountDao()
+    private val registrationDao = pbtxDatabase.registrationDao()
+
+    fun initRegistration(): KeyModel {
+        val keyModel = createRandomKey()
+        val registrationRecord = RegistrationRecord(keyModel.publicKey.keyBytes.toString(), keyModel.alias)
+        registrationDao.insert(registrationRecord)
+        return keyModel
+    }
+
+    fun registerAccount(networkId: Long, permission: Permission, seqNumber: Int = 0, prevHash: Long = 0) {
+        val actor = permission.actor
+        val weightedKey = permission.getKeys(0) //we expect only one key, used in registration/kyc process
+            ?: throw Exception("A public key was not provided in the permission object")
+        val publicKeyString = weightedKey.key.keyBytes.toString()
+
+        val registrationRecord = registrationDao.getRegistrationRecord(publicKeyString)
+            ?: throw Exception("Registration record not found for the provided public key = $publicKeyString")
+
+        if (registrationRecord.status == RegistrationStatus.COMPLETED)
+            throw Exception("The registration process was already completed for actor = $actor, public key = $publicKeyString")
+
+        val account = AccountRecord(networkId, actor, seqNumber, prevHash, registrationRecord.publicKey, registrationRecord.keyAlias)
+        accountDao.insert(account)
+
+        registrationRecord.status = RegistrationStatus.COMPLETED
+        registrationDao.update(registrationRecord)
+    }
+
+    fun getLocalSyncHead(networkId: Long, actor: Long): Pair<Int, Long> {
+        val accountDetails = accountDao.getAccount(networkId, actor)
+            ?: throw RuntimeException("AccountDetails not initialized")
+
+        return Pair(accountDetails.seqNumber, accountDetails.prevHash)
+    }
+
+    fun updateLocalSyncHead(networkId: Long, actor: Long, seqNumber: Int, prevHash: Long) {
+        val accountDetails = accountDao.getAccount(networkId, actor)
+            ?: throw RuntimeException("AccountDetails not initialized")
+
+        accountDetails.seqNumber = seqNumber
+        accountDetails.prevHash = prevHash
+
+        accountDao.update(accountDetails)
+    }
+
+    fun signTransaction(networkId: Long, actor: Long, transactionType: Int, transactionContent: ByteArray): Transaction {
+        val account = accountDao.getAccount(networkId, actor)
+            ?: throw Exception("Account not registered on this device [networkId = $networkId, actor = $actor]")
+
+        val (seqNumber, prevHash) = getLocalSyncHead(networkId, actor)
+        val transactionBody = TransactionBody.newBuilder()
+            .setNetworkId(networkId)
+            .setActor(actor)
+            .setSeqnum(seqNumber + 1)
+            .setPrevHash(prevHash)
+            .setTransactionType(transactionType)
+            .setTransactionContent(ByteString.copyFrom(transactionContent))
+            .build()
+
+        val actorSignature = signData(transactionBody.toByteArray(), account.keyAlias)
+        val actorSignatureByteString = ByteString.copyFrom(actorSignature)
+
+        val authority = Authority.newBuilder()
+            .setType(KeyType.EOSIO_KEY)
+            .addSigs(actorSignatureByteString)
+
+        return Transaction.newBuilder()
+            .setBody(transactionBody.toByteString())
+            .addAuthorities(authority)
+            .build()
+    }
 
     companion object {
         const val ANDROID_KEYSTORE: String = "AndroidKeyStore"
@@ -48,7 +126,7 @@ class PbtxClient {
                 KeyStoreProvider.generateDefaultKeyGenParameterSpecBuilder(alias).build()
 
             var keyStore = getKeyStoreInstance()
-            keyStore.load(null);
+            keyStore.load(null)
 
 
             var privateKeyEntry = loadKeyAlias(alias, keyStore)
@@ -61,6 +139,13 @@ class PbtxClient {
 
             return additionByteAdd(compressedPublicKey)
 
+        }
+
+        private fun createRandomKey(): KeyModel {
+            val keyAlias = "EKIS-" + UUID.randomUUID().toString()
+            val publicKeyBytes = createKey(keyAlias)
+            val publicKey = ProtobufProvider.createPublicKeyProtoMessage(publicKeyBytes)
+            return KeyModel(publicKey, keyAlias)
         }
 
         private fun loadKeyAlias(alias: String, keyStore: KeyStore): KeyStore.PrivateKeyEntry? {
@@ -76,14 +161,14 @@ class PbtxClient {
         @Throws(QueryAndroidKeyStoreError::class)
         @JvmStatic
         fun listKeys(): ArrayList<KeyModel> {
-            var mList: ArrayList<KeyModel> = ArrayList();
+            var mList: ArrayList<KeyModel> = ArrayList()
 
             try {
                 val keyStore = getKeyStoreInstance()
-                keyStore.load(null);
+                keyStore.load(null)
                 var aliasList = keyStore.aliases().toList()
-                aliasList.forEach() {
-                    var keyModel = getProtobufModels(keyStore, it, null)
+                aliasList.forEach {
+                    var keyModel = ProtobufProvider.getProtobufModels(keyStore, it, null)
                     mList.add(keyModel)
                 }
             } catch (ex: Exception) {
@@ -91,7 +176,7 @@ class PbtxClient {
                 throw QueryAndroidKeyStoreError(QUERY_ANDROID_KEYSTORE_GENERIC_ERROR, ex)
             }
 
-            return mList;
+            return mList
         }
 
         /**
@@ -105,7 +190,7 @@ class PbtxClient {
             var pubKey: KeyStore.PrivateKeyEntry? = null
             try {
                 val keyStore = getKeyStoreInstance()
-                keyStore.load(null);
+                keyStore.load(null)
                 pubKey = keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry
 
             } catch (ex: Exception) {
@@ -181,7 +266,7 @@ class PbtxClient {
             try {
 
                 var keyStore = getKeyStoreInstance()
-                keyStore.load(null);
+                keyStore.load(null)
 
                 val keyEntry = keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry
                 Log.d("Key Entry Sign Data:", keyEntry.toString())
@@ -201,40 +286,6 @@ class PbtxClient {
             } catch (ex: Exception) {
                 throw AndroidKeyStoreSigningError(ex)
             }
-        }
-
-        fun getSyncHead(networkId: Long, actor: Long): Pair<Int, Long> {
-            //TODO mcicu: these values must be taken from the backend, and stored on device
-            val seqNumber: Int = 0 //next number in sequence, stored on blockchain
-            val prevHash: Long = 0 //previous TransactionBody's hash: first 8 bytes of sha256, stored as big-endian
-            return Pair(seqNumber, prevHash)
-        }
-
-        fun signTransaction(networkId: Long, actor: Long, transactionType: Int, transactionContent: ByteArray): Transaction {
-            val (seqNumber, prevHash) = getSyncHead(networkId, actor)
-
-            val transactionBody = TransactionBody.newBuilder()
-                .setNetworkId(networkId)
-                .setActor(actor)
-                .setSeqnum(seqNumber)
-                .setPrevHash(prevHash)
-                .setTransactionType(transactionType)
-                .setTransactionContent(ByteString.copyFrom(transactionContent))
-                .build()
-
-            //TODO mcicu: Need to retrieve Permissions related to actor to determine which key will be used for signing and the alias of the key
-            //here we're using a key created with alias == actor (key must be created before signing the transaction)
-            val actorSignature = signData(transactionBody.toByteArray(), actor.toString())
-            val actorSignatureByteString = ByteString.copyFrom(actorSignature)
-
-            val authority = Authority.newBuilder()
-                .setType(KeyType.EOSIO_KEY)
-                .addSigs(actorSignatureByteString)
-
-            return Transaction.newBuilder()
-                .setBody(transactionBody.toByteString())
-                .addAuthorities(authority)
-                .build()
         }
     }
 
