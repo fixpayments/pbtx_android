@@ -9,6 +9,6 @@ data class AccountRecord(
     @ColumnInfo(name = "actor") val actor: Long,
     @ColumnInfo(name = "seq_number") var seqNumber: Int,
     @ColumnInfo(name = "prev_hash") var prevHash: Long,
-    @ColumnInfo(name = "public_key") var publicKey: String, //we expect only one key, used in registration/kyc process
+    @ColumnInfo(name = "public_key") var publicKey: String, //hex string representation of the key bytes
     @ColumnInfo(name = "key_alias") var keyAlias: String
 )

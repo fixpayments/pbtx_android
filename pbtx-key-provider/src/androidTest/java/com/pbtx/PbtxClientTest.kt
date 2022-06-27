@@ -2,6 +2,7 @@ package com.pbtx
 
 import android.util.Log
 import androidx.test.runner.AndroidJUnit4
+import com.pbtx.utils.PbtxUtils
 import org.junit.*
 import org.junit.rules.ExpectedException
 import org.junit.runner.RunWith
@@ -25,7 +26,7 @@ class PbtxClientTest {
         val keyName = randomKeyName()
         val key = PbtxClient.createKey(keyName)
 
-        Log.d("EKisTest", "Key :: " + key.toHexString())
+        Log.d("EKisTest", "Key :: ${PbtxUtils.bytesToHexString(key)}")
         Assert.assertNotNull(key)
 
         // Check if the key present in the size
@@ -52,7 +53,8 @@ class PbtxClientTest {
         val keyList = PbtxClient.listKeys()
 
         keyList.forEach {
-            Log.d("EKisTest", "Key :: " + it.publicKey.toByteArray().toHexString())
+            val publicKeyBytes = it.publicKey.keyBytes.toByteArray()
+            Log.d("EKisTest", "Key :: ${PbtxUtils.bytesToHexString(publicKeyBytes)}")
         }
         assert(keyList.size == initialKeyListSize + 2)
 
@@ -70,31 +72,16 @@ class PbtxClientTest {
         PbtxClient.createKey(keyName)
 
         // Signing data
-        val signature: ByteArray? = PbtxClient.signData(
-            "0102030405060708090a0b0c0d0e0f".decodeHex(),
+        val data = "0102030405060708090a0b0c0d0e0f"
+        val signature: ByteArray = PbtxClient.signData(
+            PbtxUtils.decodeHex(data),
             keyName
         )
-        Log.d("EKisTest", "Signature ${signature?.toHexString()}")
+        Log.d("EKisTest", "Signature ${PbtxUtils.bytesToHexString(signature)}")
         Assert.assertNotNull(signature)
 
         // Cleanup
         PbtxClient.deleteKey(keyName)
-    }
-
-    private fun String.decodeHex(): ByteArray {
-        check(length % 2 == 0) { "Must have an even length" }
-
-        val byteIterator = chunkedSequence(2)
-            .map { it.toInt(16).toByte() }
-            .iterator()
-
-        return ByteArray(length / 2) { byteIterator.next() }
-    }
-
-    private fun ByteArray.toHexString(): String {
-        return this.joinToString("") {
-            java.lang.String.format("%02x", it)
-        }
     }
 
     private fun randomKeyName(): String {

@@ -17,6 +17,7 @@ import com.pbtx.persistence.entities.RegistrationStatus
 import com.pbtx.utils.KeyStoreProvider
 import com.pbtx.utils.KeyStoreProvider.Companion.generateAndroidKeyStoreKey
 import com.pbtx.utils.KeyStoreProvider.Companion.getCompressedPublicKey
+import com.pbtx.utils.PbtxUtils
 import com.pbtx.utils.PbtxUtils.Companion.additionByteAdd
 import com.pbtx.utils.ProtobufProvider
 import com.pbtx.utils.SignatureProvider.Companion.getCanonicalSignature
@@ -37,7 +38,8 @@ class PbtxClient constructor(context: Context) {
 
     fun initRegistration(): KeyModel {
         val keyModel = createRandomKey()
-        val registrationRecord = RegistrationRecord(keyModel.publicKey.keyBytes.toString(), keyModel.alias)
+        val publicKeyString = PbtxUtils.bytesToHexString(keyModel.publicKey.keyBytes.toByteArray())
+        val registrationRecord = RegistrationRecord(publicKeyString, keyModel.alias)
         registrationDao.insert(registrationRecord)
         return keyModel
     }
@@ -46,7 +48,7 @@ class PbtxClient constructor(context: Context) {
         val actor = permission.actor
         val weightedKey = permission.getKeys(0) //we expect only one key, used in registration/kyc process
             ?: throw Exception("A public key was not provided in the permission object")
-        val publicKeyString = weightedKey.key.keyBytes.toString()
+        val publicKeyString = PbtxUtils.bytesToHexString(weightedKey.key.keyBytes.toByteArray())
 
         val registrationRecord = registrationDao.getRegistrationRecord(publicKeyString)
             ?: throw Exception("Registration record not found for the provided public key = $publicKeyString")

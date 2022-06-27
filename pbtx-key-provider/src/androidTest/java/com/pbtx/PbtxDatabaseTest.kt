@@ -23,7 +23,7 @@ class PbtxDatabaseTest : TestCase() {
     }
 
     @Test
-    fun updateLocalSyncHeadTest() {
+    fun registrationFlowTest() {
         val networkId = 100L
         val actor = ThreadLocalRandom.current().nextLong()
         var seqNum = 0
