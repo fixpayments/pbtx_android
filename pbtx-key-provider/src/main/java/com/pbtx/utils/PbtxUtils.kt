@@ -21,6 +21,19 @@ class PbtxUtils {
             return destination
         }
 
+        fun decodeHex(input: String): ByteArray {
+            check(input.length % 2 == 0) { "Must have an even length" }
 
+            val byteIterator = input.chunkedSequence(2)
+                .map { it.toInt(16).toByte() }
+                .iterator()
+            return ByteArray(input.length / 2) { byteIterator.next() }
+        }
+
+        fun bytesToHexString(input: ByteArray): String {
+            return input.joinToString("") {
+                java.lang.String.format("%02x", it)
+            }
+        }
     }
 }
