@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "PBTXAndroid"
-include ':app'
-include ':pbtx-key-provider'
+include ':dummy-app'
+include ':pbtx-android-module'

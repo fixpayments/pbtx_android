@@ -36,7 +36,7 @@ class PbtxClient constructor(context: Context) {
     private val accountDao = pbtxDatabase.accountDao()
     private val registrationDao = pbtxDatabase.registrationDao()
 
-    fun initRegistration(): KeyModel {
+    suspend fun initLocalRegistration(): KeyModel {
         val keyModel = createRandomKey()
         val publicKeyString = PbtxUtils.bytesToHexString(keyModel.publicKey.keyBytes.toByteArray())
         val registrationRecord = RegistrationRecord(publicKeyString, keyModel.alias)
@@ -44,7 +44,7 @@ class PbtxClient constructor(context: Context) {
         return keyModel
     }
 
-    fun registerAccount(networkId: Long, permission: Permission, seqNumber: Int = 0, prevHash: Long = 0) {
+    suspend fun registerLocalAccount(networkId: Long, permission: Permission, seqNumber: Int = 0, prevHash: Long = 0) {
         val actor = permission.actor
         val weightedKey = permission.getKeys(0) //we expect only one key, used in registration/kyc process
             ?: throw Exception("A public key was not provided in the permission object")
@@ -63,14 +63,14 @@ class PbtxClient constructor(context: Context) {
         registrationDao.update(registrationRecord)
     }
 
-    fun getLocalSyncHead(networkId: Long, actor: Long): Pair<Int, Long> {
+    suspend fun getLocalSyncHead(networkId: Long, actor: Long): Pair<Int, Long> {
         val accountDetails = accountDao.getAccount(networkId, actor)
             ?: throw RuntimeException("AccountDetails not initialized")
 
         return Pair(accountDetails.seqNumber, accountDetails.prevHash)
     }
 
-    fun updateLocalSyncHead(networkId: Long, actor: Long, seqNumber: Int, prevHash: Long) {
+    suspend fun updateLocalSyncHead(networkId: Long, actor: Long, seqNumber: Int, prevHash: Long) {
         val accountDetails = accountDao.getAccount(networkId, actor)
             ?: throw RuntimeException("AccountDetails not initialized")
 
@@ -80,7 +80,7 @@ class PbtxClient constructor(context: Context) {
         accountDao.update(accountDetails)
     }
 
-    fun signTransaction(networkId: Long, actor: Long, transactionType: Int, transactionContent: ByteArray): Transaction {
+    suspend fun signTransaction(networkId: Long, actor: Long, transactionType: Int, transactionContent: ByteArray): Transaction {
         val account = accountDao.getAccount(networkId, actor)
             ?: throw Exception("Account not registered on this device [networkId = $networkId, actor = $actor]")
 

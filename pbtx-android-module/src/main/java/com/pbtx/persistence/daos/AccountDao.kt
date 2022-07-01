@@ -9,11 +9,11 @@ import com.pbtx.persistence.entities.AccountRecord
 @Dao
 interface AccountDao {
     @Query("SELECT * FROM accounts where network_id = :networkId and actor = :actor")
-    fun getAccount(networkId: Long, actor: Long): AccountRecord?
+    suspend fun getAccount(networkId: Long, actor: Long): AccountRecord?
 
     @Insert
-    fun insert(accountRecord: AccountRecord)
+    suspend fun insert(accountRecord: AccountRecord)
 
     @Update
-    fun update(accountRecord: AccountRecord)
+    suspend fun update(accountRecord: AccountRecord)
 }

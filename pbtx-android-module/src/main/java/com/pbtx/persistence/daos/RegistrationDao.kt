@@ -10,11 +10,11 @@ import com.pbtx.persistence.entities.RegistrationRecord
 interface RegistrationDao {
 
     @Query("SELECT * FROM registration where public_key = :publicKey")
-    fun getRegistrationRecord(publicKey: String): RegistrationRecord?
+    suspend fun getRegistrationRecord(publicKey: String): RegistrationRecord?
 
     @Insert
-    fun insert(registrationRecord: RegistrationRecord)
+    suspend fun insert(registrationRecord: RegistrationRecord)
 
     @Update
-    fun update(registrationRecord: RegistrationRecord)
+    suspend fun update(registrationRecord: RegistrationRecord)
 }
