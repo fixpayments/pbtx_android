@@ -89,13 +89,13 @@ protobuf message.
 
 #### 3.1. Implemented methods
 
-3.1.1. `PbtxClient.initRegistration(): KeyModel` generates a new public/private key pair, saves it
+3.1.1. `PbtxClient.initLocalRegistration(): KeyModel` generates a new public/private key pair, saves it
 in Android Keystore with an alias, saves a RegistrationRecord in the local db for future usage, and
 returns a KeyModel object consisting of the generated `public key` and the `alias` used for the
 private key in Android Keystore. For on-boarding new accounts, call this method once and use the
 returned key alias when signing challenge data.
 
-3.1.2. `PbtxClient.registerAccount(networkId: Long, permission: Permission, seqNumber: Int = 0, prevHash: Long = 0)`
+3.1.2. `PbtxClient.registerLocalAccount(networkId: Long, permission: Permission, seqNumber: Int = 0, prevHash: Long = 0)`
 adds a new account to persistent storage and initializes it with initial values. It verifies if one
 of the public keys in the permission is known. Currently only the first key in the Permission object
 is verified/used.
