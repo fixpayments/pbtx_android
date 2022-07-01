@@ -24,7 +24,6 @@ abstract class PbtxDatabase : RoomDatabase() {
                 return INSTANCE ?: run {
                     val instance = Room
                         .inMemoryDatabaseBuilder(context, PbtxDatabase::class.java) //TODO mcicu: use in-memory db only for tests
-                        .allowMainThreadQueries() //TODO mcicu: use co-routines to run asynchronous db requests
                         //.databaseBuilder(context, PbtxDatabase::class.java, "pbtx_database")
                         .build()
                     INSTANCE = instance
