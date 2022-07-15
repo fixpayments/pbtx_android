@@ -8,7 +8,7 @@ import com.pbtx.persistence.entities.AccountRecord
 
 @Dao
 interface AccountDao {
-    @Query("SELECT * FROM accounts where network_id = :networkId and actor = :actor")
+    @Query("SELECT * FROM accounts where network_id = :networkId and actor = :actor LIMIT 1")
     suspend fun getAccount(networkId: Long, actor: Long): AccountRecord?
 
     @Insert
