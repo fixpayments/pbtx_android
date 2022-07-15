@@ -8,6 +8,7 @@ import com.pbtx.persistence.daos.AccountDao
 import com.pbtx.persistence.daos.RegistrationDao
 import com.pbtx.persistence.entities.AccountRecord
 import com.pbtx.persistence.entities.RegistrationRecord
+import com.pbtx.utils.ApplicationUtils
 
 @Database(entities = [RegistrationRecord::class, AccountRecord::class], version = 2)
 abstract class PbtxDatabase : RoomDatabase() {
@@ -22,10 +23,14 @@ abstract class PbtxDatabase : RoomDatabase() {
         fun getInstance(context: Context): PbtxDatabase {
             return INSTANCE ?: synchronized(this) {
                 return INSTANCE ?: run {
-                    val instance = Room
-                        .inMemoryDatabaseBuilder(context, PbtxDatabase::class.java) //TODO mcicu: use in-memory db only for tests
-                        //.databaseBuilder(context, PbtxDatabase::class.java, "pbtx_database")
-                        .build()
+                    val instance =
+                        if (ApplicationUtils.isTestMode())
+                            Room.inMemoryDatabaseBuilder(context, PbtxDatabase::class.java)
+                                .build()
+                        else
+                            Room.databaseBuilder(context, PbtxDatabase::class.java, "pbtx_database")
+                                .build()
+
                     INSTANCE = instance
                     return instance
                 }

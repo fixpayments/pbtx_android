@@ -144,7 +144,7 @@ class PbtxClient constructor(context: Context) {
         }
 
         private fun createRandomKey(): KeyModel {
-            val keyAlias = "EKIS-" + UUID.randomUUID().toString()
+            val keyAlias = "PBTX-" + UUID.randomUUID().toString()
             val publicKeyBytes = createKey(keyAlias)
             val publicKey = ProtobufProvider.createPublicKeyProtoMessage(publicKeyBytes)
             return KeyModel(publicKey, keyAlias)
