@@ -69,21 +69,30 @@ class PbtxClient constructor(context: Context) {
         return true
     }
 
-    suspend fun getLocalSyncHead(networkId: Long, actor: Long): Pair<Int, Long> {
-        val accountDetails = accountDao.getAccount(networkId, actor)
-            ?: throw RuntimeException("AccountDetails not initialized")
+    suspend fun geyKeyForAccount(networkId: Long, actor: Long): KeyModel {
+        val accountRecord = accountDao.getAccount(networkId, actor)
+            ?: throw Exception("Account not registered on this device [networkId = $networkId, actor = $actor]")
 
-        return Pair(accountDetails.seqNumber, accountDetails.prevHash)
+        val publicKeyBytes = getKey(accountRecord.keyAlias)
+        val publicKey = ProtobufProvider.createPublicKeyProtoMessage(publicKeyBytes)
+        return KeyModel(publicKey, accountRecord.keyAlias)
+    }
+
+    suspend fun getLocalSyncHead(networkId: Long, actor: Long): Pair<Int, Long> {
+        val accountRecord = accountDao.getAccount(networkId, actor)
+            ?: throw Exception("Account not registered on this device [networkId = $networkId, actor = $actor]")
+
+        return Pair(accountRecord.seqNumber, accountRecord.prevHash)
     }
 
     suspend fun updateLocalSyncHead(networkId: Long, actor: Long, seqNumber: Int, prevHash: Long) {
-        val accountDetails = accountDao.getAccount(networkId, actor)
-            ?: throw RuntimeException("AccountDetails not initialized")
+        val accountRecord = accountDao.getAccount(networkId, actor)
+            ?: throw Exception("Account not registered on this device [networkId = $networkId, actor = $actor]")
 
-        accountDetails.seqNumber = seqNumber
-        accountDetails.prevHash = prevHash
+        accountRecord.seqNumber = seqNumber
+        accountRecord.prevHash = prevHash
 
-        accountDao.update(accountDetails)
+        accountDao.update(accountRecord)
     }
 
     suspend fun signTransaction(networkId: Long, actor: Long, transactionType: Int, transactionContent: ByteArray): Transaction {
@@ -200,8 +209,8 @@ class PbtxClient constructor(context: Context) {
 
         @Throws(QueryAndroidKeyStoreError::class)
         @JvmStatic
-        fun getKey(alias: String): ByteArray? {
-            var pubKey: KeyStore.PrivateKeyEntry? = null
+        fun getKey(alias: String): ByteArray {
+            val pubKey: KeyStore.PrivateKeyEntry?
             try {
                 val keyStore = getKeyStoreInstance()
                 keyStore.load(null)
@@ -211,7 +220,7 @@ class PbtxClient constructor(context: Context) {
                 ex.printStackTrace()
                 throw QueryAndroidKeyStoreError(QUERY_ANDROID_KEYSTORE_GENERIC_ERROR, ex)
             }
-            var compressedPublicKey = getCompressedPublicKey(pubKey)
+            val compressedPublicKey = getCompressedPublicKey(pubKey)
 
             return additionByteAdd(compressedPublicKey)
         }

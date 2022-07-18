@@ -103,19 +103,23 @@ is verified/used.
 3.1.3. `PbtxClient.isLocalAccountRegistered(networkId: Long, actor: Long): Boolean`
 checks if a local account is registered for the given actor.
 
-3.1.4. `PbtxClient.getLocalSyncHead(networkId: Long, actor: Long): Pair<Int, Long>` returns the
+3.1.4. `PbtxClient.geyKeyForAccount(networkId: Long, actor: Long): KeyModel`
+Returns a KeyModel object associated for the account, containing the `public key` and the `alias` used for the
+private key in Android Keystore.
+
+3.1.5. `PbtxClient.getLocalSyncHead(networkId: Long, actor: Long): Pair<Int, Long>` returns the
 local stored `seqnum` and `prev_hash` of the account.
 
-3.1.5. `PbtxClient.updateLocalSyncHead(networkId: Long, actor: Long, seqNumber: Int, prevHash: Long)`
+3.1.6. `PbtxClient.updateLocalSyncHead(networkId: Long, actor: Long, seqNumber: Int, prevHash: Long)`
 updates the local values of `seqNum` and `prevHash`. Use it to either sync these local properties
 with the blockchain, or to update them when a new signed transaction is created and stored locally.
 
-3.1.6.`PbtxClient.signTransaction(networkId: Long, actor: Long, transactionType: Int, transactionContent: ByteArray): Transaction`
+3.1.7.`PbtxClient.signTransaction(networkId: Long, actor: Long, transactionType: Int, transactionContent: ByteArray): Transaction`
 returns a signed `pbtx.Transaction` protobuf message. It contains the `TransactionBody` built from
 the input params, and the authority signature obtained by signing the `TransactionBody` with the
 private key owned locally by the account.
 
-3.1.7. `PbtxClient.actorSignData(networkId: Long, actor: Long, data: ByteArray): ByteArray`
+3.1.8. `PbtxClient.actorSignData(networkId: Long, actor: Long, data: ByteArray): ByteArray`
 signs a given data using the actor's private key. It returns the signed data (i.e. the signature). 
 
 #### 3.2. Methods to implement
