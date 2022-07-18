@@ -103,7 +103,7 @@ is verified/used.
 3.1.3. `PbtxClient.isLocalAccountRegistered(networkId: Long, actor: Long): Boolean`
 checks if a local account is registered for the given actor.
 
-3.1.4. `PbtxClient.geyKeyForAccount(networkId: Long, actor: Long): KeyModel`
+3.1.4. `PbtxClient.getKeyForAccount(networkId: Long, actor: Long): KeyModel`
 Returns a KeyModel object associated for the account, containing the `public key` and the `alias` used for the
 private key in Android Keystore.
 
