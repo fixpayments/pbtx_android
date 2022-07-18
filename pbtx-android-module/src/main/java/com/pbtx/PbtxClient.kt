@@ -63,6 +63,12 @@ class PbtxClient constructor(context: Context) {
         registrationDao.update(registrationRecord)
     }
 
+    suspend fun isLocalAccountRegistered(networkId: Long, actor: Long): Boolean {
+        accountDao.getAccount(networkId, actor)
+            ?: return false
+        return true
+    }
+
     suspend fun getLocalSyncHead(networkId: Long, actor: Long): Pair<Int, Long> {
         val accountDetails = accountDao.getAccount(networkId, actor)
             ?: throw RuntimeException("AccountDetails not initialized")
@@ -105,6 +111,12 @@ class PbtxClient constructor(context: Context) {
             .setBody(transactionBody.toByteString())
             .addAuthorities(authority)
             .build()
+    }
+
+    suspend fun actorSignData(networkId: Long, actor: Long, data: ByteArray): ByteArray {
+        val account = accountDao.getAccount(networkId, actor)
+            ?: throw Exception("Account not registered on this device [networkId = $networkId, actor = $actor]")
+        return signData(data, account.keyAlias)
     }
 
     companion object {
