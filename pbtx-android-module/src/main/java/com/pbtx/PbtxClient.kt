@@ -69,7 +69,7 @@ class PbtxClient constructor(context: Context) {
         return true
     }
 
-    suspend fun geyKeyForAccount(networkId: Long, actor: Long): KeyModel {
+    suspend fun getKeyForAccount(networkId: Long, actor: Long): KeyModel {
         val accountRecord = accountDao.getAccount(networkId, actor)
             ?: throw Exception("Account not registered on this device [networkId = $networkId, actor = $actor]")
 
