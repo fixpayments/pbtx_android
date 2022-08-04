@@ -1,0 +1,143 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "63ded9a2324e465fadc899dbbf60e658",
+    "entities": [
+      {
+        "tableName": "registration",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`public_key` TEXT NOT NULL, `key_alias` TEXT NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`public_key`))",
+        "fields": [
+          {
+            "fieldPath": "publicKey",
+            "columnName": "public_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "keyAlias",
+            "columnName": "key_alias",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "public_key"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "accounts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`network_id` INTEGER NOT NULL, `actor` INTEGER NOT NULL, `seq_number` INTEGER NOT NULL, `prev_hash` INTEGER NOT NULL, `public_key` TEXT NOT NULL, `key_alias` TEXT NOT NULL, PRIMARY KEY(`network_id`, `actor`))",
+        "fields": [
+          {
+            "fieldPath": "networkId",
+            "columnName": "network_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actor",
+            "columnName": "actor",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seqNumber",
+            "columnName": "seq_number",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "prevHash",
+            "columnName": "prev_hash",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "publicKey",
+            "columnName": "public_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "keyAlias",
+            "columnName": "key_alias",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "network_id",
+            "actor"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "transaction_history",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`network_id` INTEGER NOT NULL, `actor` INTEGER NOT NULL, `transaction` BLOB NOT NULL, `backend_timestamp` INTEGER NOT NULL, `backend_trx_id` BLOB NOT NULL, PRIMARY KEY(`network_id`, `actor`, `transaction`))",
+        "fields": [
+          {
+            "fieldPath": "networkId",
+            "columnName": "network_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actor",
+            "columnName": "actor",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transaction",
+            "columnName": "transaction",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "backendTimestamp",
+            "columnName": "backend_timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "backendTrxId",
+            "columnName": "backend_trx_id",
+            "affinity": "BLOB",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "network_id",
+            "actor",
+            "transaction"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '63ded9a2324e465fadc899dbbf60e658')"
+    ]
+  }
+}

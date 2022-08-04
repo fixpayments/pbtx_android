@@ -9,7 +9,7 @@ import com.pbtx.persistence.entities.RegistrationRecord
 @Dao
 interface RegistrationDao {
 
-    @Query("SELECT * FROM registration where public_key = :publicKey")
+    @Query("SELECT * FROM registration where public_key = :publicKey LIMIT 1")
     suspend fun getRegistrationRecord(publicKey: String): RegistrationRecord?
 
     @Insert

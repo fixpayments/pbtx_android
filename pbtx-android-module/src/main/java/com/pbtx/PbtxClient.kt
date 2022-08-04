@@ -21,6 +21,7 @@ import com.pbtx.utils.PbtxUtils
 import com.pbtx.utils.PbtxUtils.Companion.additionByteAdd
 import com.pbtx.utils.ProtobufProvider
 import com.pbtx.utils.SignatureProvider.Companion.getCanonicalSignature
+import com.pbtx.utils.mappers.TransactionHistoryMapper
 import pbtx.*
 import java.security.KeyStore
 import java.security.Signature
@@ -35,6 +36,7 @@ class PbtxClient constructor(context: Context) {
     private val pbtxDatabase = PbtxDatabase.getInstance(context)
     private val accountDao = pbtxDatabase.accountDao()
     private val registrationDao = pbtxDatabase.registrationDao()
+    private val transactionDao = pbtxDatabase.transactionHistoryDao()
 
     suspend fun initLocalRegistration(): KeyModel {
         val keyModel = createRandomKey()
@@ -122,10 +124,27 @@ class PbtxClient constructor(context: Context) {
             .build()
     }
 
+
     suspend fun actorSignData(networkId: Long, actor: Long, data: ByteArray): ByteArray {
         val account = accountDao.getAccount(networkId, actor)
             ?: throw Exception("Account not registered on this device [networkId = $networkId, actor = $actor]")
         return signData(data, account.keyAlias)
+    }
+
+    suspend fun getTransactionHistory(networkId: Long, actor: Long, pageNumber: Int, pageSize: Int): List<TransactionHistoryEntry> {
+        return transactionDao.getTransactions(networkId, actor, pageNumber, pageSize)
+            .map { transactionRecord -> TransactionHistoryMapper.mapToTransactionHistoryEntry(transactionRecord) }
+    }
+
+    suspend fun storeTransactionHistoryEntry(networkId: Long, actor: Long, transactionHistoryEntry: TransactionHistoryEntry): Boolean {
+        val backendTransactionId = transactionHistoryEntry.backendTrxid.toByteArray()
+        if (transactionDao.getTransaction(networkId, actor, backendTransactionId) == null) {
+            val transactionRecord = TransactionHistoryMapper.mapToTransactionHistoryRecord(networkId, actor, transactionHistoryEntry)
+            transactionDao.insert(transactionRecord)
+            return true
+        }
+        Log.d("storeTransactionHistoryEntry", "TransactionHistoryEntry is already stored on the local db [backendTransactionId = $backendTransactionId")
+        return false
     }
 
     companion object {
@@ -248,8 +267,7 @@ class PbtxClient constructor(context: Context) {
 
         @JvmStatic
         fun getKeyStoreInstance(): KeyStore {
-            var keyStore: KeyStore? = null
-            keyStore = if (KEYSTORE_INSTANCE == null) {
+            val keyStore: KeyStore? = if (KEYSTORE_INSTANCE == null) {
                 KeyStore.getInstance("AndroidKeyStore").apply {
                     load(null)
                 }
@@ -263,8 +281,7 @@ class PbtxClient constructor(context: Context) {
 
         @JvmStatic
         fun getSignatureInstance(): Signature {
-            var signatureInstace: Signature? = null
-            signatureInstace = if (SIGNATURE_INSTANCE == null) {
+            val signatureInstace: Signature? = if (SIGNATURE_INSTANCE == null) {
                 Signature.getInstance(ANDROID_ECDSA_SIGNATURE_ALGORITHM)
             } else {
                 SIGNATURE_INSTANCE

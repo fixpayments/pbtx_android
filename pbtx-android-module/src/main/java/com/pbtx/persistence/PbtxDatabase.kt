@@ -1,19 +1,29 @@
 package com.pbtx.persistence
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.pbtx.persistence.daos.AccountDao
 import com.pbtx.persistence.daos.RegistrationDao
+import com.pbtx.persistence.daos.TransactionHistoryDao
 import com.pbtx.persistence.entities.AccountRecord
 import com.pbtx.persistence.entities.RegistrationRecord
+import com.pbtx.persistence.entities.TransactionHistoryRecord
 import com.pbtx.utils.ApplicationUtils
 
-@Database(entities = [RegistrationRecord::class, AccountRecord::class], version = 2)
+@Database(
+    entities = [RegistrationRecord::class, AccountRecord::class, TransactionHistoryRecord::class],
+    version = 3,
+    autoMigrations = [
+        AutoMigration(from = 2, to = 3)
+    ]
+)
 abstract class PbtxDatabase : RoomDatabase() {
     abstract fun registrationDao(): RegistrationDao
     abstract fun accountDao(): AccountDao
+    abstract fun transactionHistoryDao(): TransactionHistoryDao
 
     companion object {
         @Volatile

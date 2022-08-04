@@ -37,7 +37,7 @@ class SignatureProvider {
         /**
          * Half curve value of R1 key type (to calculate low S)
          */
-        private val HALF_CURVE_ORDER_R1: BigInteger?
+        private val HALF_CURVE_ORDER_R1: BigInteger
 
         /**
          * EC holder of K1 key type
@@ -52,7 +52,7 @@ class SignatureProvider {
         /**
          * Half curve value of K1 key type (to calculate low S)
          */
-        private val HALF_CURVE_ORDER_K1: BigInteger?
+        private val HALF_CURVE_ORDER_K1: BigInteger
 
         /**
          * The algorithm used to generate the object is unsupported.

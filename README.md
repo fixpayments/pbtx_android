@@ -120,7 +120,16 @@ the input params, and the authority signature obtained by signing the `Transacti
 private key owned locally by the account.
 
 3.1.8. `PbtxClient.actorSignData(networkId: Long, actor: Long, data: ByteArray): ByteArray`
-signs a given data using the actor's private key. It returns the signed data (i.e. the signature). 
+signs a given data using the actor's private key. It returns the signed data (i.e. the signature).
+
+3.1.9. `PbtxClient.getTransactionHistory(networkId: Long, actor: Long, pageNumber: Int, pageSize: Int): List<TransactionHistoryEntry>`
+retrieves the history of transactions, paginated.
+It returns a sequence of `TransactionHistoryEntry` messages. For those transactions which were not
+confirmed by the network, `backend_timestamp` indicates the time when the user has signed the
+transaction, and `backend_trxid` is empty.
+
+3.1.10. `PbtxClient.storeTransactionHistoryEntry(networkId: Long, actor: Long, transactionHistoryEntry: TransactionHistoryEntry): Boolean`
+store a TransactionHistoryEntry. Returns false if the entry was already stored, and true otherwise.
 
 #### 3.2. Methods to implement
 
@@ -146,12 +155,6 @@ the list of failed transactions (TODO: define the selection criteria).
 adds third-party transactions to the actor's history. They are signed by other actors, but they are
 relevant to this actor (for example, incoming payments or notifications). The library does not
 verify them, but only stores them for `getHistory()` output.
-
-3.2.7. `PbtxClient.getHistory(BigInteger network_id, BigInteger actor, ...)` retrieves the history
-of transactions based on specified criteria (number of entries or maximum transaction age). It
-returns a sequence of `TransactionHistoryEntry` messages. For those transactions which were not
-confirmed by the network, `backend_timestamp` indicates the time when the user has signed the
-transaction, and `backend_trxid` is empty.
 
 
 Copyright and License
