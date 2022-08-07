@@ -122,14 +122,15 @@ private key owned locally by the account.
 3.1.8. `PbtxClient.actorSignData(networkId: Long, actor: Long, data: ByteArray): ByteArray`
 signs a given data using the actor's private key. It returns the signed data (i.e. the signature).
 
-3.1.9. `PbtxClient.getTransactionHistory(networkId: Long, actor: Long, pageNumber: Int, pageSize: Int): List<TransactionHistoryEntry>`
+3.1.9. `PbtxClient.getLocalTransactionHistory(networkId: Long, actor: Long, pageNumber: Int, pageSize: Int): List<TransactionHistoryEntry>`
 retrieves the history of transactions, paginated.
+The list of transactions is descending by backend_timestamp (i.e. most recent transaction is first in the list).
 It returns a sequence of `TransactionHistoryEntry` messages. For those transactions which were not
 confirmed by the network, `backend_timestamp` indicates the time when the user has signed the
 transaction, and `backend_trxid` is empty.
 
-3.1.10. `PbtxClient.storeTransactionHistoryEntry(networkId: Long, actor: Long, transactionHistoryEntry: TransactionHistoryEntry): Boolean`
-store a TransactionHistoryEntry. Returns false if the entry was already stored, and true otherwise.
+3.1.10. `PbtxClient.saveLocalTransactionHistoryEntry(networkId: Long, actor: Long, transactionHistoryEntry: TransactionHistoryEntry): Boolean`
+save a TransactionHistoryEntry. Returns false if the entry was already stored, and true otherwise.
 
 #### 3.2. Methods to implement
 

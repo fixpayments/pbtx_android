@@ -131,19 +131,21 @@ class PbtxClient constructor(context: Context) {
         return signData(data, account.keyAlias)
     }
 
-    suspend fun getTransactionHistory(networkId: Long, actor: Long, pageNumber: Int, pageSize: Int): List<TransactionHistoryEntry> {
+    suspend fun getLocalTransactionHistory(networkId: Long, actor: Long, pageNumber: Int, pageSize: Int): List<TransactionHistoryEntry> {
         return transactionDao.getTransactions(networkId, actor, pageNumber, pageSize)
             .map { transactionRecord -> TransactionHistoryMapper.mapToTransactionHistoryEntry(transactionRecord) }
     }
 
-    suspend fun storeTransactionHistoryEntry(networkId: Long, actor: Long, transactionHistoryEntry: TransactionHistoryEntry): Boolean {
-        val backendTransactionId = transactionHistoryEntry.backendTrxid.toByteArray()
-        if (transactionDao.getTransaction(networkId, actor, backendTransactionId) == null) {
+    suspend fun saveLocalTransactionHistoryEntry(networkId: Long, actor: Long, transactionHistoryEntry: TransactionHistoryEntry): Boolean {
+        val transactionHashAsBytes = transactionHistoryEntry.backendTrxid.toByteArray()
+        val transactionHash = PbtxUtils.bytesToHexString(transactionHashAsBytes)
+        if (transactionDao.getTransaction(networkId, actor, transactionHashAsBytes) == null) {
             val transactionRecord = TransactionHistoryMapper.mapToTransactionHistoryRecord(networkId, actor, transactionHistoryEntry)
             transactionDao.insert(transactionRecord)
+            Log.d("pbtxClient.saveLocalTransactionHistoryEntry", "saved new TransactionHistoryEntry [txHash = $transactionHash]")
             return true
         }
-        Log.d("storeTransactionHistoryEntry", "TransactionHistoryEntry is already stored on the local db [backendTransactionId = $backendTransactionId")
+        Log.d("pbtxClient.saveLocalTransactionHistoryEntry", "TransactionHistoryEntry is already stored on the local db [txHash = $transactionHash]")
         return false
     }
 
@@ -167,7 +169,7 @@ class PbtxClient constructor(context: Context) {
             val keyGenParameterSpec: KeyGenParameterSpec =
                 KeyStoreProvider.generateDefaultKeyGenParameterSpecBuilder(alias).build()
 
-            var keyStore = getKeyStoreInstance()
+            val keyStore = getKeyStoreInstance()
             keyStore.load(null)
 
 
@@ -177,7 +179,7 @@ class PbtxClient constructor(context: Context) {
                 privateKeyEntry = loadKeyAlias(alias, keyStore)
             }
 
-            var compressedPublicKey = getCompressedPublicKey(privateKeyEntry!!)
+            val compressedPublicKey = getCompressedPublicKey(privateKeyEntry!!)
 
             return additionByteAdd(compressedPublicKey)
 
@@ -203,14 +205,14 @@ class PbtxClient constructor(context: Context) {
         @Throws(QueryAndroidKeyStoreError::class)
         @JvmStatic
         fun listKeys(): ArrayList<KeyModel> {
-            var mList: ArrayList<KeyModel> = ArrayList()
+            val mList: ArrayList<KeyModel> = ArrayList()
 
             try {
                 val keyStore = getKeyStoreInstance()
                 keyStore.load(null)
-                var aliasList = keyStore.aliases().toList()
+                val aliasList = keyStore.aliases().toList()
                 aliasList.forEach {
-                    var keyModel = ProtobufProvider.getProtobufModels(keyStore, it, null)
+                    val keyModel = ProtobufProvider.getProtobufModels(keyStore, it, null)
                     mList.add(keyModel)
                 }
             } catch (ex: Exception) {
@@ -305,7 +307,7 @@ class PbtxClient constructor(context: Context) {
         fun signData(data: ByteArray, alias: String): ByteArray {
             try {
 
-                var keyStore = getKeyStoreInstance()
+                val keyStore = getKeyStoreInstance()
                 keyStore.load(null)
 
                 val keyEntry = keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry
@@ -313,7 +315,7 @@ class PbtxClient constructor(context: Context) {
 
                 val compressedPublicKey = getCompressedPublicKey(keyEntry)
 
-                var signature = getSignatureInstance().run {
+                val signature = getSignatureInstance().run {
                     initSign(keyEntry.privateKey)
                     update(data)
                     sign()

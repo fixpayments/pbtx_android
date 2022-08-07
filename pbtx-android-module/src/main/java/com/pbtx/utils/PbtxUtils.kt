@@ -1,5 +1,9 @@
 package com.pbtx.utils
 
+import pbtx.KeyWeight
+import pbtx.Permission
+import pbtx.PublicKey
+
 class PbtxUtils {
 
     companion object {
@@ -34,6 +38,17 @@ class PbtxUtils {
             return input.joinToString("") {
                 java.lang.String.format("%02x", it)
             }
+        }
+
+        fun buildBasicPermissionForActor(actor: Long, publicKey: PublicKey): Permission {
+            return Permission.newBuilder()
+                .setActor(actor)
+                .addKeys(
+                    KeyWeight.newBuilder()
+                        .setWeight(1)
+                        .setKey(publicKey)
+                )
+                .build()
         }
     }
 }

@@ -4,6 +4,7 @@ package com.pbtx
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.pbtx.utils.PbtxUtils
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Test
@@ -35,14 +36,7 @@ class PbtxDatabaseTest {
         val registrationKey = pbtxClient.initLocalRegistration()
 
         //creating Permission object
-        val weightedRegistrationKey = KeyWeight.newBuilder()
-            .setKey(registrationKey.publicKey)
-            .setWeight(1)
-            .build()
-        val permission = Permission.newBuilder()
-            .setActor(actor)
-            .addKeys(weightedRegistrationKey)
-            .build()
+        val permission = PbtxUtils.buildBasicPermissionForActor(actor, registrationKey.publicKey)
 
         //register account with default
         pbtxClient.registerLocalAccount(networkId, permission, seqNum, prevHash)
