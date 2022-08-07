@@ -8,6 +8,7 @@ class TransactionHistoryMapper {
 
     companion object {
 
+        //map to db record
         fun mapToTransactionHistoryRecord(networkId: Long, actor: Long, transactionHistoryEntry: TransactionHistoryEntry): TransactionHistoryRecord {
             return TransactionHistoryRecord(
                 networkId,
@@ -18,6 +19,7 @@ class TransactionHistoryMapper {
             )
         }
 
+        //map from db record
         fun mapToTransactionHistoryEntry(transactionHistoryRecord: TransactionHistoryRecord): TransactionHistoryEntry {
             return TransactionHistoryEntry.newBuilder()
                 .setTransaction(ByteString.copyFrom(transactionHistoryRecord.transaction))
