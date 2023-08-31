@@ -22,7 +22,9 @@ import com.pbtx.utils.PbtxUtils.Companion.additionByteAdd
 import com.pbtx.utils.ProtobufProvider
 import com.pbtx.utils.SignatureProvider.Companion.getCanonicalSignature
 import com.pbtx.utils.mappers.TransactionHistoryMapper
+import org.bitcoinj.core.Sha256Hash
 import pbtx.*
+import java.math.BigInteger
 import java.security.KeyStore
 import java.security.Signature
 import java.util.*
@@ -117,6 +119,10 @@ class PbtxClient constructor(context: Context) {
         val authority = Authority.newBuilder()
             .setType(KeyType.EOSIO_KEY)
             .addSigs(actorSignatureByteString)
+
+        //update local sync head (before sending the transaction)
+        val bodyHash = BigInteger(Sha256Hash.hash(transactionBody.toByteArray()).sliceArray(IntRange(0, 7))).toLong()
+        updateLocalSyncHead(networkId, actor, seqNumber + 1, bodyHash)
 
         return Transaction.newBuilder()
             .setBody(transactionBody.toByteString())
